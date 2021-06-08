@@ -1,17 +1,16 @@
 ---
-
-- name: copy package-rpm to all nodes from files in role
-  copy:
-    src: "{{item}}"
-    dest: "{{image_store_path}}"
-  with_items: "{{docker_ce_rpm_list}}" 
+- name: install pip docker files 
+  pip:
+          #requirements: "{{install_dir}}/pip_docker_5.0.0/requirements.txt"
+    name: docker
+    extra_args: "--no-index --find-links=file:{{install_dir}}/pip_docker_5.0.0"
 
 - name: install multiple rpm package from local path
   yum:
-    name: "{{image_store_path}}/{{item}}"
+    name: "{{install_dir}}/{{item}}"
     state: present
   with_items: "{{docker_ce_rpm_list}}"
-      
+
 - name: Add a docker group
   group:
     name: docker
@@ -19,7 +18,6 @@
 
 - name: user append with the docker group
   user:
-    name: support
+    name: "{{ansible_user}}"
     groups: docker
     append: yes
-

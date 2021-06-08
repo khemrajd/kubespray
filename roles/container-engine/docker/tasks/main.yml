@@ -56,6 +56,10 @@
 
 - import_tasks: pre-upgrade.yml
 
+- name: Install docker-ce when in airgapped_environment
+  import_tasks: docker-ce-rpms.yml
+  when: airgapped_environment and ansible_distribution in ["Centos", "RedHat"]
+
 - name: ensure docker-ce repository public key is installed
   apt_key:
     id: "{{ item }}"

@@ -1,1 +1,14 @@
+---
+cluster_name: 'ss8-k8s-cluster'
 airgapped_environment: 'true'
+image_store_path: "/tmp"
+remote_dir: "remote"
+install_dir: "{{image_store_path}}/{{remote_dir}}"
+helm_enabled: 'True'
+files_repo: "{{playbook_dir}}/contrib/offline"
+docker_ce_rpm_list:
+- containerd.io-1.4.6-3.1.el8.x86_64.rpm
+- docker-ce-19.03.13-3.el8.x86_64.rpm
+- docker-ce-cli-19.03.13-3.el8.x86_64.rpm
+override_system_hostname: false
+

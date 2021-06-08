@@ -27,8 +27,12 @@
     src: "{{ kube_config_dir }}/admin.conf"
     dest: "{{ ansible_env.HOME | default('/root') }}/.kube/config"
     remote_src: yes
-    mode: "0600"
+    mode: "0644"
     backup: yes
+
+- name: set kube config file for non-root user
+  import_tasks: kube_config_file.yml
+  when: ansible_user != "root"
 
 - name: Create kube artifacts dir
   file:

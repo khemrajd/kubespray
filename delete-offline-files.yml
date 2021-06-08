@@ -1,0 +1,8 @@
+---
+- name: Delete unarchive offline files
+  hosts: k8s_cluster
+  gather_facts: False
+  tasks:
+    - file:
+        path: "{{install_dir}}"
+        state: absent

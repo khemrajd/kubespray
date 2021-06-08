@@ -1,0 +1,8 @@
+---
+- name: Copy and unarchive offline files 
+  hosts: k8s_cluster
+  gather_facts: False
+  tasks:
+    - unarchive:
+        src: "{{playbook_dir}}/offline_files/{{remote_dir}}.tgz"
+        dest: "{{image_store_path}}"
