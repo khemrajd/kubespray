@@ -1,0 +1,4 @@
+1. Need to copy /etc/kubernetes/admin.conf to ~/.kube/config and export KUBECONFIG=~/.kube/config
+  Added via ansible tasks and commited
+2. Need to install docker-ce rpms. Added via ansible tasks and commited
+  Here we need docker-ce rpms (list is in custom_vars.yml) to copied in 'roles/container-engine/docker/files'. These rpms r note commited. Can be downloaded from yum/internet 
