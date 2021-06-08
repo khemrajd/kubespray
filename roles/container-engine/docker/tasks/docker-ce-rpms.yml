@@ -1,0 +1,25 @@
+---
+
+- name: copy package-rpm to all nodes from files in role
+  copy:
+    src: "{{item}}"
+    dest: "{{image_store_path}}"
+  with_items: "{{docker_ce_rpm_list}}" 
+
+- name: install multiple rpm package from local path
+  yum:
+    name: "{{image_store_path}}/{{item}}"
+    state: present
+  with_items: "{{docker_ce_rpm_list}}"
+      
+- name: Add a docker group
+  group:
+    name: docker
+    state: present
+
+- name: user append with the docker group
+  user:
+    name: support
+    groups: docker
+    append: yes
+

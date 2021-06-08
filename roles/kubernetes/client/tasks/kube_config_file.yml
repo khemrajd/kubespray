@@ -1,0 +1,31 @@
+- name: set facts for non root user
+  set_fact:
+    kubedir: "/home/{{ ansible_user }}/.kube"
+
+- name: make .kube dir in ansible user home
+  file:
+    path: "{{kubedir}}"
+    state: directory
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: "0600"
+
+- name: Copy admin kubeconfig to current/ansible user home
+  copy:
+    src: "{{ kube_config_dir }}/admin.conf"
+    dest: "{{kubedir}}/config"
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    remote_src: yes
+    mode: "0600"
+    backup: yes
+
+- name: Set kubeconfig for non root user
+  lineinfile:
+    path: /home/{{ansible_user}}/.bashrc
+    line: export KUBECONFIG="{{kubedir}}/config"
+    create: yes
+    backup: yes
+
+- name: export the KUBECONFIG file
+  shell: "export KUBECONFIG={{kubedir}}/config"
