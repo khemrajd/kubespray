@@ -3,7 +3,7 @@
   roles:
     - { role: prepare }
 
-- hosts: kube_control_plane[0]
+- hosts: kube_controller_nodes[0]
   tags:
     - "provision"
   roles:

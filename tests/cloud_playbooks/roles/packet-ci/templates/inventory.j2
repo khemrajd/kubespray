@@ -4,7 +4,7 @@ instance-{{ loop.index }} ansible_ssh_host={{instance.stdout}}
 {% endfor %}
 
 {% if mode is defined and mode in ["separate", "separate-scale"] %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-1
 
 # TODO(oomichi): Remove all kube-master groups from this file after releasing v2.16.
@@ -15,13 +15,13 @@ instance-1
 [kube-node]
 instance-2
 
-[kube_node]
+[kube_worker_nodes]
 instance-2
 
 [etcd]
 instance-3
 {% elif mode is defined and mode in ["ha", "ha-scale"] %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-1
 instance-2
 
@@ -32,7 +32,7 @@ instance-2
 [kube-node]
 instance-3
 
-[kube_node]
+[kube_worker_nodes]
 instance-3
 
 [etcd]
@@ -40,7 +40,7 @@ instance-1
 instance-2
 instance-3
 {% elif mode == "default" %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-1
 
 [kube-master]
@@ -49,13 +49,13 @@ instance-1
 [kube-node]
 instance-2
 
-[kube_node]
+[kube_worker_nodes]
 instance-2
 
 [etcd]
 instance-1
 {% elif mode == "aio" %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-1
 
 [kube-master]
@@ -64,13 +64,13 @@ instance-1
 [kube-node]
 instance-1
 
-[kube_node]
+[kube_worker_nodes]
 instance-1
 
 [etcd]
 instance-1
 {% elif mode == "ha-recover" %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-1
 instance-2
 
@@ -81,7 +81,7 @@ instance-2
 [kube-node]
 instance-3
 
-[kube_node]
+[kube_worker_nodes]
 instance-3
 
 [etcd]
@@ -95,7 +95,7 @@ instance-2
 [broken_etcd]
 instance-2 etcd_member_name=etcd3
 {% elif mode == "ha-recover-noquorum" %}
-[kube_control_plane]
+[kube_controller_nodes]
 instance-3
 instance-1
 instance-2
@@ -108,7 +108,7 @@ instance-2
 [kube-node]
 instance-3
 
-[kube_node]
+[kube_worker_nodes]
 instance-3
 
 [etcd]
@@ -131,7 +131,7 @@ kube-master
 calico-rr
 
 [k8s_cluster:children]
-kube_node
+kube_worker_nodes
 kube_master
 calico_rr
 

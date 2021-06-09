@@ -61,7 +61,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', 'minion-{{i}}-nic')]"
       ],
       "tags": {
-        "roles": "kube_node"
+        "roles": "kube_worker_nodes"
       },
       "apiVersion": "{{apiVersion}}",
       "properties": {

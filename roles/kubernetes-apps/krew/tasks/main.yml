@@ -1,5 +1,5 @@
 ---
-- name: Krew | install krew on kube_control_plane
+- name: Krew | install krew on kube_controller_nodes
   import_tasks: krew.yml
 
 - name: Krew | install krew on localhost

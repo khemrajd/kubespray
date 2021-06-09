@@ -26,7 +26,7 @@
   include_tasks: prep_kubeadm_images.yml
   when:
     - not skip_downloads|default(false)
-    - inventory_hostname in groups['kube_control_plane']
+    - inventory_hostname in groups['kube_controller_nodes']
   tags:
     - download
     - upload

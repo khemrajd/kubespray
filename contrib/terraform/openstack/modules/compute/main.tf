@@ -245,7 +245,7 @@ resource "openstack_compute_instance_v2" "k8s_master" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "etcd,kube_control_plane,${var.supplementary_master_groups},k8s_cluster"
+    kubespray_groups = "etcd,kube_controller_nodes,${var.supplementary_master_groups},k8s_cluster"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -292,7 +292,7 @@ resource "openstack_compute_instance_v2" "k8s_master_no_etcd" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "kube_control_plane,${var.supplementary_master_groups},k8s_cluster"
+    kubespray_groups = "kube_controller_nodes,${var.supplementary_master_groups},k8s_cluster"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -379,7 +379,7 @@ resource "openstack_compute_instance_v2" "k8s_master_no_floating_ip" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "etcd,kube_control_plane,${var.supplementary_master_groups},k8s_cluster,no_floating"
+    kubespray_groups = "etcd,kube_controller_nodes,${var.supplementary_master_groups},k8s_cluster,no_floating"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -421,7 +421,7 @@ resource "openstack_compute_instance_v2" "k8s_master_no_floating_ip_no_etcd" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "kube_control_plane,${var.supplementary_master_groups},k8s_cluster,no_floating"
+    kubespray_groups = "kube_controller_nodes,${var.supplementary_master_groups},k8s_cluster,no_floating"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -462,7 +462,7 @@ resource "openstack_compute_instance_v2" "k8s_node" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "kube_node,k8s_cluster,${var.supplementary_node_groups}"
+    kubespray_groups = "kube_worker_nodes,k8s_cluster,${var.supplementary_node_groups}"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -507,7 +507,7 @@ resource "openstack_compute_instance_v2" "k8s_node_no_floating_ip" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "kube_node,k8s_cluster,no_floating,${var.supplementary_node_groups}"
+    kubespray_groups = "kube_worker_nodes,k8s_cluster,no_floating,${var.supplementary_node_groups}"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }
@@ -548,7 +548,7 @@ resource "openstack_compute_instance_v2" "k8s_nodes" {
 
   metadata = {
     ssh_user         = var.ssh_user
-    kubespray_groups = "kube_node,k8s_cluster,%{if each.value.floating_ip == false}no_floating,%{endif}${var.supplementary_node_groups}"
+    kubespray_groups = "kube_worker_nodes,k8s_cluster,%{if each.value.floating_ip == false}no_floating,%{endif}${var.supplementary_node_groups}"
     depends_on       = var.network_id
     use_access_ip    = var.use_access_ip
   }

@@ -1,21 +1,21 @@
 ---
 # This is an inventory compatibility playbook to ensure we keep compatibility with old style group names
 
-- name: Add kube-master nodes to kube_control_plane
+- name: Add kube-master nodes to kube_controller_nodes
   hosts: kube-master
   gather_facts: false
   tasks:
-    - name: add nodes to kube_control_plane group
+    - name: add nodes to kube_controller_nodes group
       group_by:
-        key: 'kube_control_plane'
+        key: 'kube_controller_nodes'
 
-- name: Add kube-node nodes to kube_node
+- name: Add kube-node nodes to kube_worker_nodes
   hosts: kube-node
   gather_facts: false
   tasks:
-    - name: add nodes to kube_node group
+    - name: add nodes to kube_worker_nodes group
       group_by:
-        key: 'kube_node'
+        key: 'kube_worker_nodes'
 
 - name: Add k8s-cluster nodes to k8s_cluster
   hosts: k8s-cluster

@@ -1,6 +1,6 @@
 #Add AWS Roles for Kubernetes
 
-resource "aws_iam_role" "kube_control_plane" {
+resource "aws_iam_role" "kube_controller_nodes" {
   name = "kubernetes-${var.aws_cluster_name}-master"
 
   assume_role_policy = <<EOF
@@ -40,9 +40,9 @@ EOF
 
 #Add AWS Policies for Kubernetes
 
-resource "aws_iam_role_policy" "kube_control_plane" {
+resource "aws_iam_role_policy" "kube_controller_nodes" {
   name = "kubernetes-${var.aws_cluster_name}-master"
-  role = aws_iam_role.kube_control_plane.id
+  role = aws_iam_role.kube_controller_nodes.id
 
   policy = <<EOF
 {
@@ -130,9 +130,9 @@ EOF
 
 #Create AWS Instance Profiles
 
-resource "aws_iam_instance_profile" "kube_control_plane" {
+resource "aws_iam_instance_profile" "kube_controller_nodes" {
   name = "kube_${var.aws_cluster_name}_master_profile"
-  role = aws_iam_role.kube_control_plane.name
+  role = aws_iam_role.kube_controller_nodes.name
 }
 
 resource "aws_iam_instance_profile" "kube-worker" {

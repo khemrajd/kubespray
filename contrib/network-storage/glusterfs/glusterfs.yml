@@ -19,6 +19,6 @@
   roles:
     - { role: glusterfs/client }
 
-- hosts: kube_control_plane[0]
+- hosts: kube_controller_nodes[0]
   roles:
     - { role: kubernetes-pv }

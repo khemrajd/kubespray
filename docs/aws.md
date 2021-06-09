@@ -35,14 +35,14 @@ This will produce an inventory that is passed into Ansible that looks like the f
   ],
   "k8s_cluster": {
     "children": [
-      "kube_control_plane",
-      "kube_node"
+      "kube_controller_nodes",
+      "kube_worker_nodes"
     ]
   },
-  "kube_control_plane": [
+  "kube_controller_nodes": [
     "ip-172-31-3-xxx.us-east-2.compute.internal"
   ],
-  "kube_node": [
+  "kube_worker_nodes": [
     "ip-172-31-8-xxx.us-east-2.compute.internal"
   ]
 }
@@ -51,7 +51,7 @@ This will produce an inventory that is passed into Ansible that looks like the f
 Guide:
 
 - Create instances in AWS as needed.
-- Either during or after creation, add tags to the instances with a key of `kubespray-role` and a value of `kube_control_plane`, `etcd`, or `kube_node`. You can also share roles like `kube_control_plane, etcd`
+- Either during or after creation, add tags to the instances with a key of `kubespray-role` and a value of `kube_controller_nodes`, `etcd`, or `kube_worker_nodes`. You can also share roles like `kube_controller_nodes, etcd`
 - Copy the `kubespray-aws-inventory.py` script from `kubespray/contrib/aws_inventory` to the `kubespray/inventory` directory.
 - Set the following AWS credentials and info as environment variables in your terminal:
 

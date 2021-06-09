@@ -3,20 +3,20 @@
 {% endfor %}
 
 {% if mode is defined and mode == "separate" %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{droplets.results[0].droplet.name}}
 
-[kube_node]
+[kube_worker_nodes]
 {{droplets.results[1].droplet.name}}
 
 [etcd]
 {{droplets.results[2].droplet.name}}
 {% elif mode is defined and mode == "ha" %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{droplets.results[0].droplet.name}}
 {{droplets.results[1].droplet.name}}
 
-[kube_node]
+[kube_worker_nodes]
 {{droplets.results[2].droplet.name}}
 
 [etcd]
@@ -29,10 +29,10 @@
 [broken_etcd]
 {{droplets.results[2].droplet.name}}
 {% else %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{droplets.results[0].droplet.name}}
 
-[kube_node]
+[kube_worker_nodes]
 {{droplets.results[1].droplet.name}}
 
 [etcd]
@@ -42,6 +42,6 @@
 [calico_rr]
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube_worker_nodes
+kube_controller_nodes
 calico_rr

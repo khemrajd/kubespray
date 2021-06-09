@@ -4,8 +4,8 @@
 
 The inventory is composed of 3 groups:
 
-* **kube_node** : list of kubernetes nodes where the pods will run.
-* **kube_control_plane** : list of servers where kubernetes control plane components (apiserver, scheduler, controller) will run.
+* **kube_worker_nodes** : list of kubernetes nodes where the pods will run.
+* **kube_controller_nodes** : list of servers where kubernetes control plane components (apiserver, scheduler, controller) will run.
 * **etcd**: list of servers to compose the etcd server. You should have at least 3 servers for failover purpose.
 
 Note: do not modify the children of _k8s_cluster_, like putting
@@ -13,7 +13,7 @@ the _etcd_ group into the _k8s_cluster_, unless you are certain
 to do that and you have it fully contained in the latter:
 
 ```ShellSession
-k8s_cluster ⊂ etcd => kube_node ∩ etcd = etcd
+k8s_cluster ⊂ etcd => kube_worker_nodes ∩ etcd = etcd
 ```
 
 When _kube_node_ contains _etcd_, you define your etcd cluster to be as well schedulable for Kubernetes workloads.
@@ -40,7 +40,7 @@ node4 ansible_host=95.54.0.15 ip=10.3.0.4
 node5 ansible_host=95.54.0.16 ip=10.3.0.5
 node6 ansible_host=95.54.0.17 ip=10.3.0.6
 
-[kube_control_plane]
+[kube_controller_nodes]
 node1
 node2
 
@@ -49,7 +49,7 @@ node1
 node2
 node3
 
-[kube_node]
+[kube_worker_nodes]
 node2
 node3
 node4
@@ -57,8 +57,8 @@ node5
 node6
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube_worker_nodes
+kube_controller_nodes
 ```
 
 ## Group vars and overriding variables precedence

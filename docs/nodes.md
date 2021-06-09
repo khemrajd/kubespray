@@ -2,9 +2,9 @@
 
 Modified from [comments in #3471](https://github.com/kubernetes-sigs/kubespray/issues/3471#issuecomment-530036084)
 
-## Limitation: Removal of first kube_control_plane and etcd-master
+## Limitation: Removal of first kube_controller_nodes and etcd-master
 
-Currently you can't remove the first node in your kube_control_plane and etcd-master list. If you still want to remove this node you have to:
+Currently you can't remove the first node in your kube_controller_nodes and etcd-master list. If you still want to remove this node you have to:
 
 ### 1) Change order of current masters
 
@@ -12,12 +12,12 @@ Modify the order of your master list by pushing your first entry to any other po
 
 ```yaml
   children:
-    kube_control_plane:
+    kube_controller_nodes:
       hosts:
         node-1:
         node-2:
         node-3:
-    kube_node:
+    kube_worker_nodes:
       hosts:
         node-1:
         node-2:
@@ -33,12 +33,12 @@ change your inventory to:
 
 ```yaml
   children:
-    kube_control_plane:
+    kube_controller_nodes:
       hosts:
         node-2:
         node-3:
         node-1:
-    kube_node:
+    kube_worker_nodes:
       hosts:
         node-2:
         node-3:
@@ -103,10 +103,10 @@ You need to make sure there are always an odd number of etcd nodes in the cluste
 
 ### 1) Add the new node running cluster.yml
 
-Update the inventory and run `cluster.yml` passing `--limit=etcd,kube_control_plane -e ignore_assert_errors=yes`.
+Update the inventory and run `cluster.yml` passing `--limit=etcd,kube_controller_nodes -e ignore_assert_errors=yes`.
 If the node you want to add as an etcd node is already a worker or master node in your cluster, you have to remove him first using `remove-node.yml`.
 
-Run `upgrade-cluster.yml` also passing `--limit=etcd,kube_control_plane -e ignore_assert_errors=yes`. This is necessary to update all etcd configuration in the cluster.
+Run `upgrade-cluster.yml` also passing `--limit=etcd,kube_controller_nodes -e ignore_assert_errors=yes`. This is necessary to update all etcd configuration in the cluster.
 
 At this point, you will have an even number of nodes.
 Everything should still be working, and you should only have problems if the cluster decides to elect a new etcd leader before you remove a node.

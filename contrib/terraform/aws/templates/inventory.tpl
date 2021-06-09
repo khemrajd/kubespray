@@ -7,11 +7,11 @@ ${public_ip_address_bastion}
 [bastion]
 ${public_ip_address_bastion}
 
-[kube_control_plane]
+[kube_controller_nodes]
 ${list_master}
 
 
-[kube_node]
+[kube_worker_nodes]
 ${list_node}
 
 
@@ -20,8 +20,8 @@ ${list_etcd}
 
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube_worker_nodes
+kube_controller_nodes
 
 
 [k8s_cluster:vars]

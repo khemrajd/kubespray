@@ -1,5 +1,5 @@
 ---
-- hosts: kube_node:kube_control_plane
+- hosts: kube_worker_nodes:kube_controller_nodes
   tasks:
     - name: Remove old cloud provider config
       file:
@@ -7,7 +7,7 @@
         state: absent
       with_items:
         - /etc/kubernetes/cloud_config
-- hosts: kube_control_plane[0]
+- hosts: kube_controller_nodes[0]
   tasks:
     - name: Include kubespray-default variables
       include_vars: ../roles/kubespray-defaults/defaults/main.yaml

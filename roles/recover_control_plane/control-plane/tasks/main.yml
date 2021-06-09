@@ -10,7 +10,7 @@
   changed_when: false
   when: groups['broken_kube_control_plane']
 
-- name: Delete broken kube_control_plane nodes from cluster
+- name: Delete broken kube_controller_nodes nodes from cluster
   command: "{{ bin_dir }}/kubectl delete node {{ item }}"
   environment:
     - KUBECONFIG: "{{ ansible_env.HOME | default('/root') }}/.kube/config"
@@ -19,9 +19,9 @@
   failed_when: false
   when: groups['broken_kube_control_plane']
 
-- name: Fail if unable to delete broken kube_control_plane nodes from cluster
+- name: Fail if unable to delete broken kube_controller_nodes nodes from cluster
   fail:
-    msg: "Unable to delete broken kube_control_plane node: {{ item.item }}"
+    msg: "Unable to delete broken kube_controller_nodes node: {{ item.item }}"
   loop: "{{ delete_broken_kube_masters.results }}"
   changed_when: false
   when:

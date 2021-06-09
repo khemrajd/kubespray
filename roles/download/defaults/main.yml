@@ -30,7 +30,7 @@ download_container: true
 # if this is set to true, uses the localhost for download_run_once mode
 # (requires docker and sudo to access docker). You may want this option for
 # local caching of docker images or for Flatcar Container Linux by Kinvolk cluster nodes.
-# Otherwise, uses the first node in the kube_control_plane group to store images
+# Otherwise, uses the first node in the kube_controller_nodes group to store images
 # in the download_run_once mode.
 download_localhost: false
 
@@ -42,8 +42,8 @@ download_always_pull: false
 # SSL validation of get_url module. Note that kubespray will still be performing checksum validation.
 download_validate_certs: true
 
-# Use the first kube_control_plane if download_localhost is not set
-download_delegate: "{% if download_localhost %}localhost{% else %}{{ groups['kube_control_plane'][0] }}{% endif %}"
+# Use the first kube_controller_nodes if download_localhost is not set
+download_delegate: "{% if download_localhost %}localhost{% else %}{{ groups['kube_controller_nodes'][0] }}{% endif %}"
 
 # Arch of Docker images and needed packages
 image_arch: "{{host_architecture | default('amd64')}}"
@@ -673,7 +673,7 @@ downloads:
     owner: "root"
     mode: "0755"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   crictl:
     file: true
@@ -836,7 +836,7 @@ downloads:
     owner: "root"
     mode: "0755"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   weave_kube:
     enabled: "{{ kube_network_plugin == 'weave' }}"
@@ -908,7 +908,7 @@ downloads:
     tag: "{{ nginx_image_tag }}"
     sha256: "{{ nginx_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   haproxy:
     enabled: "{{ loadbalancer_apiserver_localhost and loadbalancer_apiserver_type == 'haproxy' }}"
@@ -917,7 +917,7 @@ downloads:
     tag: "{{ haproxy_image_tag }}"
     sha256: "{{ haproxy_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   coredns:
     enabled: "{{ dns_mode in ['coredns', 'coredns_dual'] }}"
@@ -926,7 +926,7 @@ downloads:
     tag: "{{ coredns_image_tag }}"
     sha256: "{{ coredns_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   nodelocaldns:
     enabled: "{{ enable_nodelocaldns }}"
@@ -944,7 +944,7 @@ downloads:
     tag: "{{ dnsautoscaler_image_tag }}"
     sha256: "{{ dnsautoscaler_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   helm:
     enabled: "{{ helm_enabled }}"
@@ -957,7 +957,7 @@ downloads:
     owner: "root"
     mode: "0755"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   krew:
     enabled: "{{ krew_enabled }}"
@@ -970,7 +970,7 @@ downloads:
     owner: "root"
     mode: "0755"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   registry:
     enabled: "{{ registry_enabled }}"
@@ -979,7 +979,7 @@ downloads:
     tag: "{{ registry_image_tag }}"
     sha256: "{{ registry_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   registry_proxy:
     enabled: "{{ registry_enabled }}"
@@ -988,7 +988,7 @@ downloads:
     tag: "{{ registry_proxy_image_tag }}"
     sha256: "{{ registry_proxy_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   metrics_server:
     enabled: "{{ metrics_server_enabled }}"
@@ -997,7 +997,7 @@ downloads:
     tag: "{{ metrics_server_image_tag }}"
     sha256: "{{ metrics_server_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   addon_resizer:
     # Currently addon_resizer is only used by metrics server
@@ -1007,7 +1007,7 @@ downloads:
     tag: "{{ addon_resizer_image_tag }}"
     sha256: "{{ addon_resizer_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   local_volume_provisioner:
     enabled: "{{ local_volume_provisioner_enabled }}"
@@ -1016,7 +1016,7 @@ downloads:
     tag: "{{ local_volume_provisioner_image_tag }}"
     sha256: "{{ local_volume_provisioner_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   cephfs_provisioner:
     enabled: "{{ cephfs_provisioner_enabled }}"
@@ -1025,7 +1025,7 @@ downloads:
     tag: "{{ cephfs_provisioner_image_tag }}"
     sha256: "{{ cephfs_provisioner_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   rbd_provisioner:
     enabled: "{{ rbd_provisioner_enabled }}"
@@ -1034,7 +1034,7 @@ downloads:
     tag: "{{ rbd_provisioner_image_tag }}"
     sha256: "{{ rbd_provisioner_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   local_path_provisioner:
     enabled: "{{ local_path_provisioner_enabled }}"
@@ -1043,7 +1043,7 @@ downloads:
     tag: "{{ local_path_provisioner_image_tag }}"
     sha256: "{{ local_path_provisioner_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   ingress_nginx_controller:
     enabled: "{{ ingress_nginx_enabled }}"
@@ -1052,7 +1052,7 @@ downloads:
     tag: "{{ ingress_nginx_controller_image_tag }}"
     sha256: "{{ ingress_nginx_controller_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   ingress_ambassador_controller:
     enabled: "{{ ingress_ambassador_enabled }}"
@@ -1061,7 +1061,7 @@ downloads:
     tag: "{{ ingress_ambassador_image_tag }}"
     sha256: "{{ ingress_ambassador_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   ingress_alb_controller:
     enabled: "{{ ingress_alb_enabled }}"
@@ -1070,7 +1070,7 @@ downloads:
     tag: "{{ alb_ingress_image_tag }}"
     sha256: "{{ ingress_alb_controller_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   cert_manager_controller:
     enabled: "{{ cert_manager_enabled }}"
@@ -1079,7 +1079,7 @@ downloads:
     tag: "{{ cert_manager_controller_image_tag }}"
     sha256: "{{ cert_manager_controller_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   cert_manager_cainjector:
     enabled: "{{ cert_manager_enabled }}"
@@ -1088,7 +1088,7 @@ downloads:
     tag: "{{ cert_manager_cainjector_image_tag }}"
     sha256: "{{ cert_manager_cainjector_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   cert_manager_webhook:
     enabled: "{{ cert_manager_enabled }}"
@@ -1097,7 +1097,7 @@ downloads:
     tag: "{{ cert_manager_webhook_image_tag }}"
     sha256: "{{ cert_manager_webhook_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   csi_attacher:
     enabled: "{{ cinder_csi_enabled or aws_ebs_csi_enabled }}"
@@ -1106,7 +1106,7 @@ downloads:
     tag: "{{ csi_attacher_image_tag }}"
     sha256: "{{ csi_attacher_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   csi_provisioner:
     enabled: "{{ cinder_csi_enabled or aws_ebs_csi_enabled }}"
@@ -1115,7 +1115,7 @@ downloads:
     tag: "{{ csi_provisioner_image_tag }}"
     sha256: "{{ csi_provisioner_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   csi_snapshotter:
     enabled: "{{ cinder_csi_enabled or aws_ebs_csi_enabled }}"
@@ -1124,7 +1124,7 @@ downloads:
     tag: "{{ csi_snapshotter_image_tag }}"
     sha256: "{{ csi_snapshotter_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   snapshot_controller:
     enabled: "{{ cinder_csi_enabled }}"
@@ -1133,7 +1133,7 @@ downloads:
     tag: "{{ snapshot_controller_image_tag }}"
     sha256: "{{ snapshot_controller_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   csi_resizer:
     enabled: "{{ cinder_csi_enabled or aws_ebs_csi_enabled }}"
@@ -1142,7 +1142,7 @@ downloads:
     tag: "{{ csi_resizer_image_tag }}"
     sha256: "{{ csi_resizer_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   csi_node_driver_registrar:
     enabled: "{{ cinder_csi_enabled or aws_ebs_csi_enabled }}"
@@ -1151,7 +1151,7 @@ downloads:
     tag: "{{ csi_node_driver_registrar_image_tag }}"
     sha256: "{{ csi_node_driver_registrar_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   cinder_csi_plugin:
     enabled: "{{ cinder_csi_enabled }}"
@@ -1160,7 +1160,7 @@ downloads:
     tag: "{{ cinder_csi_plugin_image_tag }}"
     sha256: "{{ cinder_csi_plugin_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   aws_ebs_csi_plugin:
     enabled: "{{ aws_ebs_csi_enabled }}"
@@ -1169,7 +1169,7 @@ downloads:
     tag: "{{ aws_ebs_csi_plugin_image_tag }}"
     sha256: "{{ aws_ebs_csi_plugin_digest_checksum|default(None) }}"
     groups:
-    - kube_node
+    - kube_worker_nodes
 
   dashboard:
     enabled: "{{ dashboard_enabled }}"
@@ -1178,7 +1178,7 @@ downloads:
     tag: "{{ dashboard_image_tag }}"
     sha256: "{{ dashboard_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
   dashboard_metrics_scrapper:
     enabled: "{{ dashboard_enabled }}"
@@ -1187,7 +1187,7 @@ downloads:
     tag: "{{ dashboard_metrics_scraper_tag }}"
     sha256: "{{ dashboard_digest_checksum|default(None) }}"
     groups:
-    - kube_control_plane
+    - kube_controller_nodes
 
 download_defaults:
   container: false

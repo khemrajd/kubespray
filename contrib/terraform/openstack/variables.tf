@@ -177,7 +177,7 @@ variable "external_net" {
 }
 
 variable "supplementary_master_groups" {
-  description = "supplementary kubespray ansible groups for masters, such kube_node"
+  description = "supplementary kubespray ansible groups for masters, such kube_worker_nodes"
   default     = ""
 }
 

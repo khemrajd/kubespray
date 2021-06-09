@@ -14,7 +14,7 @@
 # gfs_node2 ansible_ssh_host=95.54.0.19 # disk_volume_device_1=/dev/vdc  ip=10.3.0.8 
 # gfs_node3 ansible_ssh_host=95.54.0.20 # disk_volume_device_1=/dev/vdc  ip=10.3.0.9 
 
-# [kube_control_plane]
+# [kube_controller_nodes]
 # node1
 # node2
 
@@ -23,7 +23,7 @@
 # node2
 # node3
 
-# [kube_node]
+# [kube_worker_nodes]
 # node2
 # node3
 # node4
@@ -31,8 +31,8 @@
 # node6
 
 # [k8s_cluster:children]
-# kube_node
-# kube_control_plane
+# kube_worker_nodes
+# kube_controller_nodes
 
 # [gfs-cluster]
 # gfs_node1

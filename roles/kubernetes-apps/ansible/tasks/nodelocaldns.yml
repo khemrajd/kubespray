@@ -10,7 +10,7 @@
     secondaryclusterIP: "{{ skydns_server_secondary }}"
   when:
     - enable_nodelocaldns
-    - inventory_hostname == groups['kube_control_plane'] | first
+    - inventory_hostname == groups['kube_controller_nodes'] | first
   tags:
     - nodelocaldns
     - coredns
@@ -39,7 +39,7 @@
       {%- endif -%}
   when:
     - enable_nodelocaldns
-    - inventory_hostname == groups['kube_control_plane'] | first
+    - inventory_hostname == groups['kube_controller_nodes'] | first
   tags:
     - nodelocaldns
     - coredns

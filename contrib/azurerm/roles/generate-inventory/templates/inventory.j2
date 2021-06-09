@@ -7,9 +7,9 @@
 {% endif %}
 {% endfor %}
 
-[kube_control_plane]
+[kube_controller_nodes]
 {% for vm in vm_list %}
-{% if 'kube_control_plane' in vm.tags.roles %}
+{% if 'kube_controller_nodes' in vm.tags.roles %}
 {{ vm.name }}
 {% endif %}
 {% endfor %}
@@ -21,13 +21,13 @@
 {% endif %}
 {% endfor %}
 
-[kube_node]
+[kube_worker_nodes]
 {% for vm in vm_list %}
-{% if 'kube_node' in vm.tags.roles %}
+{% if 'kube_worker_nodes' in vm.tags.roles %}
 {{ vm.name }}
 {% endif %}
 {% endfor %}
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube_worker_nodes
+kube_controller_nodes

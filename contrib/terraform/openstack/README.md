@@ -263,7 +263,7 @@ For your cluster, edit `inventory/$CLUSTER/cluster.tfvars`.
 |`number_of_bastions` | Number of bastion hosts to create. Scripts assume this is really just zero or one |
 |`number_of_gfs_nodes_no_floating_ip` | Number of gluster servers to provision. |
 | `gfs_volume_size_in_gb` | Size of the non-ephemeral volumes to be attached to store the GlusterFS bricks |
-|`supplementary_master_groups` | To add ansible groups to the masters, such as `kube_node` for tainting them as nodes, empty by default. |
+|`supplementary_master_groups` | To add ansible groups to the masters, such as `kube_worker_nodes` for tainting them as nodes, empty by default. |
 |`supplementary_node_groups` | To add ansible groups to the nodes, such as `kube_ingress` for running ingress controller pods, empty by default. |
 |`bastion_allowed_remote_ips` | List of CIDR allowed to initiate a SSH connection, `["0.0.0.0/0"]` by default |
 |`master_allowed_remote_ips` | List of CIDR blocks allowed to initiate an API connection, `["0.0.0.0/0"]` by default |

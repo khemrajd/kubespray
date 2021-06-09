@@ -7,13 +7,13 @@ all:
             vars:
                 kubelet_fail_swap_on: false
             children:
-                kube_control_plane:
+                kube_controller_nodes:
                     hosts:
                         node1:
                 etcd:
                     hosts:
                         node2:
-                kube_node:
+                kube_worker_nodes:
                     hosts: &kube_nodes
                         node1:
                         node2:

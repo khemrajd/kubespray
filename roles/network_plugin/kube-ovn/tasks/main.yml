@@ -1,9 +1,9 @@
 ---
 - name: Kube-OVN | Label ovn-db node
   command: >-
-    {{ bin_dir }}/kubectl label --overwrite node {{ groups['kube_control_plane'] | first }} kube-ovn/role=master
+    {{ bin_dir }}/kubectl label --overwrite node {{ groups['kube_controller_nodes'] | first }} kube-ovn/role=master
   when:
-    - inventory_hostname == groups['kube_control_plane'][0]
+    - inventory_hostname == groups['kube_controller_nodes'][0]
 
 - name: Kube-OVN | Create Kube-OVN manifests
   template:

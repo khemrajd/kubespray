@@ -3,7 +3,7 @@
   command: >-
     {{ bin_dir }}/kubectl get nodes -o go-template={% raw %}'{{ range .items }}{{ .metadata.name }}{{ "\n" }}{{ end }}'{% endraw %}
   register: nodes
-  delegate_to: "{{ groups['kube_control_plane']|first }}"
+  delegate_to: "{{ groups['kube_controller_nodes']|first }}"
   changed_when: false
   run_once: true
 
@@ -15,12 +15,12 @@
       --grace-period {{ drain_grace_period }}
       --timeout {{ drain_timeout }}
       --delete-local-data {{ hostvars[item]['kube_override_hostname']|default(item) }}
-  loop: "{{ node.split(',') | default(groups['kube_node']) }}"
+  loop: "{{ node.split(',') | default(groups['kube_worker_nodes']) }}"
   # ignore servers that are not nodes
   when: hostvars[item]['kube_override_hostname']|default(item) in nodes.stdout_lines
   register: result
   failed_when: result.rc != 0 and not allow_ungraceful_removal
-  delegate_to: "{{ groups['kube_control_plane']|first }}"
+  delegate_to: "{{ groups['kube_controller_nodes']|first }}"
   run_once: true
   until: result.rc == 0 or allow_ungraceful_removal
   retries: "{{ drain_retries }}"

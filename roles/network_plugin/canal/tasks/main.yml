@@ -60,7 +60,7 @@
     - {name: canal-flannel, file: canal-crb-flannel.yml, type: clusterrolebinding}
   register: canal_manifests
   when:
-    - inventory_hostname in groups['kube_control_plane']
+    - inventory_hostname in groups['kube_controller_nodes']
 
 - name: Canal | Install calicoctl wrapper script
   template:

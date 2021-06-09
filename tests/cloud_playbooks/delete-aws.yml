@@ -1,5 +1,5 @@
 ---
-- hosts: kube_node
+- hosts: kube_worker_nodes
   become: False
 
   tasks:

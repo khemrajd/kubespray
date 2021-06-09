@@ -33,7 +33,7 @@
     group: root
     mode: 0755
   when:
-    - inventory_hostname == groups['kube_control_plane'][0]
+    - inventory_hostname == groups['kube_controller_nodes'][0]
     - cilium_hubble_install
 
 - name: Cilium | Create Cilium node manifests
@@ -50,7 +50,7 @@
     - {name: cilium, file: cilium-sa.yml, type: sa}
   register: cilium_node_manifests
   when:
-    - inventory_hostname in groups['kube_control_plane']
+    - inventory_hostname in groups['kube_controller_nodes']
     - item.when | default(True) | bool
 
 - name: Cilium | Create Cilium Hubble manifests
@@ -68,7 +68,7 @@
     - {name: hubble, file: hubble-service.yml, type: service}
   register: cilium_hubble_manifests
   when:
-    - inventory_hostname == groups['kube_control_plane'][0]
+    - inventory_hostname == groups['kube_controller_nodes'][0]
     - cilium_enable_hubble and cilium_hubble_install
     - item.when | default(True) | bool
 

@@ -19,7 +19,7 @@ resource "packet_device" "k8s_master" {
   operating_system = var.operating_system
   billing_cycle    = var.billing_cycle
   project_id       = var.packet_project_id
-  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_control_plane", "etcd", "kube_node"]
+  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_controller_nodes", "etcd", "kube_worker_nodes"]
 }
 
 resource "packet_device" "k8s_master_no_etcd" {
@@ -32,7 +32,7 @@ resource "packet_device" "k8s_master_no_etcd" {
   operating_system = var.operating_system
   billing_cycle    = var.billing_cycle
   project_id       = var.packet_project_id
-  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_control_plane"]
+  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_controller_nodes"]
 }
 
 resource "packet_device" "k8s_etcd" {
@@ -58,6 +58,6 @@ resource "packet_device" "k8s_node" {
   operating_system = var.operating_system
   billing_cycle    = var.billing_cycle
   project_id       = var.packet_project_id
-  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_node"]
+  tags             = ["cluster-${var.cluster_name}", "k8s_cluster", "kube_worker_nodes"]
 }
 

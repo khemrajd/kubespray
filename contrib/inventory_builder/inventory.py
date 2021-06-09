@@ -44,7 +44,7 @@ import re
 import subprocess
 import sys
 
-ROLES = ['all', 'kube_control_plane', 'kube_node', 'etcd', 'k8s_cluster',
+ROLES = ['all', 'kube_controller_nodes', 'kube_worker_nodes', 'etcd', 'k8s_cluster',
          'calico_rr']
 PROTECTED_NAMES = ROLES
 AVAILABLE_COMMANDS = ['help', 'print_cfg', 'print_ips', 'print_hostnames',
@@ -299,27 +299,27 @@ class KubesprayInventory(object):
 
     def set_kube_control_plane(self, hosts):
         for host in hosts:
-            self.add_host_to_group('kube_control_plane', host)
+            self.add_host_to_group('kube_controller_nodes', host)
 
     def set_all(self, hosts):
         for host, opts in hosts.items():
             self.add_host_to_group('all', host, opts)
 
     def set_k8s_cluster(self):
-        k8s_cluster = {'children': {'kube_control_plane': None,
-                                    'kube_node': None}}
+        k8s_cluster = {'children': {'kube_controller_nodes': None,
+                                    'kube_worker_nodes': None}}
         self.yaml_config['all']['children']['k8s_cluster'] = k8s_cluster
 
     def set_calico_rr(self, hosts):
         for host in hosts:
-            if host in self.yaml_config['all']['children']['kube_control_plane']: # noqa
+            if host in self.yaml_config['all']['children']['kube_controller_nodes']: # noqa
                 self.debug("Not adding {0} to calico_rr group because it "
-                           "conflicts with kube_control_plane "
+                           "conflicts with kube_controller_nodes "
                            "group".format(host))
                 continue
-            if host in self.yaml_config['all']['children']['kube_node']:
+            if host in self.yaml_config['all']['children']['kube_worker_nodes']:
                 self.debug("Not adding {0} to calico_rr group because it "
-                           "conflicts with kube_node group".format(host))
+                           "conflicts with kube_worker_nodes group".format(host))
                 continue
             self.add_host_to_group('calico_rr', host)
 
@@ -327,17 +327,17 @@ class KubesprayInventory(object):
         for host in hosts:
             if len(self.yaml_config['all']['hosts']) >= SCALE_THRESHOLD:
                 if host in self.yaml_config['all']['children']['etcd']['hosts']:  # noqa
-                    self.debug("Not adding {0} to kube_node group because of "
+                    self.debug("Not adding {0} to kube_worker_nodes group because of "
                                "scale deployment and host is in etcd "
                                "group.".format(host))
                     continue
             if len(self.yaml_config['all']['hosts']) >= MASSIVE_SCALE_THRESHOLD:  # noqa
-                if host in self.yaml_config['all']['children']['kube_control_plane']['hosts']:  # noqa
-                    self.debug("Not adding {0} to kube_node group because of "
+                if host in self.yaml_config['all']['children']['kube_controller_nodes']['hosts']:  # noqa
+                    self.debug("Not adding {0} to kube_worker_nodes group because of "
                                "scale deployment and host is in "
-                               "kube_control_plane group.".format(host))
+                               "kube_controller_nodes group.".format(host))
                     continue
-            self.add_host_to_group('kube_node', host)
+            self.add_host_to_group('kube_worker_nodes', host)
 
     def set_etcd(self, hosts):
         for host in hosts:

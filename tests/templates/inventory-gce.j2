@@ -9,21 +9,21 @@
 {{node3}} ansible_ssh_host={{gce.instance_data[2].public_ip}}
 {% endif %}
 {% if mode is defined and mode in ["separate", "separate-scale"] %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{node1}}
 
-[kube_node]
+[kube_worker_nodes]
 {{node2}}
 
 [etcd]
 {{node3}}
 
 {% elif mode is defined and mode in ["ha", "ha-scale"] %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{node1}}
 {{node2}}
 
-[kube_node]
+[kube_worker_nodes]
 {{node3}}
 
 [etcd]
@@ -38,19 +38,19 @@
 {{node2}}
 {{node3}}
 {% elif mode == "default" %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{node1}}
 
-[kube_node]
+[kube_worker_nodes]
 {{node2}}
 
 [etcd]
 {{node1}}
 {% elif mode == "aio" %}
-[kube_control_plane]
+[kube_controller_nodes]
 {{node1}}
 
-[kube_node]
+[kube_worker_nodes]
 {{node1}}
 
 [etcd]
@@ -58,8 +58,8 @@
 {% endif %}
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube_worker_nodes
+kube_controller_nodes
 calico_rr
 
 [calico_rr]
@@ -68,6 +68,6 @@ calico_rr
 [fake_hosts]
 fake_scale_host[1:200]
 
-[kube_node:children]
+[kube_worker_nodes:children]
 fake_hosts
 {% endif %}

@@ -13,7 +13,7 @@
     - { role: bastion-ssh-config, tags: ["localhost", "bastion"] }
 
 - name: Bootstrap any new workers
-  hosts: kube_node
+  hosts: kube_worker_nodes
   strategy: linear
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   gather_facts: false
@@ -35,8 +35,8 @@
     - { role: kubespray-defaults }
     - { role: etcd, tags: etcd, etcd_cluster_setup: false }
 
-- name: Download images to ansible host cache via first kube_control_plane node
-  hosts: kube_control_plane[0]
+- name: Download images to ansible host cache via first kube_controller_nodes node
+  hosts: kube_controller_nodes[0]
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   environment: "{{ proxy_disable_env }}"
@@ -46,7 +46,7 @@
     - { role: download, tags: download, when: "not skip_downloads and download_run_once and not download_localhost" }
 
 - name: Target only workers to get kubelet installed and checking in on any new nodes(engine)
-  hosts: kube_node
+  hosts: kube_worker_nodes
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   environment: "{{ proxy_disable_env }}"
@@ -58,7 +58,7 @@
     - { role: etcd, tags: etcd, etcd_cluster_setup: false, when: "not etcd_kubeadm_enabled|default(false)" }
 
 - name: Target only workers to get kubelet installed and checking in on any new nodes(node)
-  hosts: kube_node
+  hosts: kube_worker_nodes
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   environment: "{{ proxy_disable_env }}"
@@ -67,7 +67,7 @@
     - { role: kubernetes/node, tags: node }
 
 - name: Upload control plane certs and retrieve encryption key
-  hosts: kube_control_plane | first
+  hosts: kube_controller_nodes | first
   environment: "{{ proxy_disable_env }}"
   gather_facts: False
   tags: kubeadm
@@ -89,7 +89,7 @@
       when: kubeadm_certificate_key is not defined
 
 - name: Target only workers to get kubelet installed and checking in on any new nodes(network)
-  hosts: kube_node
+  hosts: kube_worker_nodes
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   environment: "{{ proxy_disable_env }}"
