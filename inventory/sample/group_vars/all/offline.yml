@@ -17,26 +17,26 @@
 # quay_image_repo: "{{ registry_host }}"
 
 ## Kubernetes components
-# kubeadm_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubeadm"
-# kubectl_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubectl"
-# kubelet_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubelet"
+kubeadm_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubeadm"
+kubectl_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubectl"
+kubelet_download_url: "{{ files_repo }}/kubernetes/{{ kube_version }}/kubelet"
 
 ## CNI Plugins
-# cni_download_url: "{{ files_repo }}/kubernetes/cni/cni-plugins-linux-{{ image_arch }}-{{ cni_version }}.tgz"
+cni_download_url: "{{ files_repo }}/kubernetes/cni/cni-plugins-linux-{{ image_arch }}-{{ cni_version }}.tgz"
 
 ## cri-tools
-# crictl_download_url: "{{ files_repo }}/kubernetes/cri-tools/crictl-{{ crictl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz"
+crictl_download_url: "{{ files_repo }}/kubernetes/cri-tools/crictl-{{ crictl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz"
 
 ## [Optional] etcd: only if you **DON'T** use etcd_deployment=host
-# etcd_download_url: "{{ files_repo }}/kubernetes/etcd/etcd-{{ etcd_version }}-linux-amd64.tar.gz"
+etcd_download_url: "{{ files_repo }}/kubernetes/etcd/etcd-{{ etcd_version }}-linux-amd64.tar.gz"
 
 # [Optional] Calico: If using Calico network plugin
-# calicoctl_download_url: "{{ files_repo }}/kubernetes/calico/{{ calico_ctl_version }}/calicoctl-linux-{{ image_arch }}"
+calicoctl_download_url: "{{ files_repo }}/kubernetes/calico/{{ calico_ctl_version }}/calicoctl-linux-{{ image_arch }}"
 # [Optional] Calico with kdd: If using Calico network plugin with kdd datastore
-# calico_crds_download_url: "{{ files_repo }}/kubernetes/calico/{{ calico_version }}.tar.gz"
+calico_crds_download_url: "{{ files_repo }}/kubernetes/calico/{{ calico_version }}.tar.gz"
 
 # [Optional] helm: only if you set helm_enabled: true
-# helm_download_url: "{{ files_repo }}/helm-{{ helm_version }}-linux-{{ image_arch }}.tar.gz"
+helm_download_url: "{{ files_repo }}/helm-{{ helm_version }}-linux-{{ image_arch }}.tar.gz"
 
 # [Optional] crun: only if you set crun_enabled: true
 # crun_download_url: "{{ files_repo }}/containers/crun/releases/download/{{ crun_version }}/crun-{{ crun_version }}-linux-{{ image_arch }}"

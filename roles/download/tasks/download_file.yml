@@ -67,6 +67,16 @@
     retries: 4
     delay: "{{ retry_stagger | default(5) }}"
     environment: "{{ proxy_env }}"
+    when: not airgapped_environment
+
+  - name: copy files from remote host
+    copy:
+      src: "{{ download.url }}"
+      dest: "{{ file_path_cached if download_force_cache else download.dest }}"
+      owner: "{{ omit if download_localhost else (download.owner | default(omit)) }}"
+      mode: "{{ omit if download_localhost else (download.mode | default(omit)) }}"
+    register: get_url_result
+    when: airgapped_environment
 
   - name: download_file | Copy file back to ansible host file cache
     synchronize:
