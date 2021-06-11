@@ -3,6 +3,7 @@ cluster_name: 'ss8-k8s-cluster'
 airgapped_environment: 'true'
 image_store_path: "/tmp"
 remote_dir: "remote"
+image_dir: "container_images"
 install_dir: "{{image_store_path}}/{{remote_dir}}"
 helm_enabled: 'True'
 files_repo: "{{playbook_dir}}/offline_files/local"

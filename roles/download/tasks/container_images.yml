@@ -1,0 +1,21 @@
+---
+- name: extract the file from remote and copy it in local folder
+  shell: "ls {{install_dir}}/{{image_dir}}/*.tar"
+  register: tarfiles
+
+- name: set image list 
+  set_fact:
+    image_list: "{{tarfiles.stdout_lines}}"
+
+- debug: 'msg="{{image_list}}"'
+
+- name: load docker images from local tar files 
+  community.docker.docker_image_load:
+    path: "{{item}}"
+  with_items: "{{image_list}}"
+  register: image_load_out
+
+- name: Delete image folder after all images loaded
+  file:
+    path: "{{install_dir}}/{{image_dir}}"
+    state: absent

@@ -1,8 +1,12 @@
 ---
-- name: Delete unarchive offline files
+- name: Remove offline files | delete local release dir
   hosts: k8s_cluster
   gather_facts: False
   tasks:
     - file:
         path: "{{install_dir}}"
+        state: absent
+
+    - file:
+        path: "{{ local_release_dir }}"
         state: absent

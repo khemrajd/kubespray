@@ -116,3 +116,7 @@
     - download_force_cache
   tags:
     - localhost
+
+- name: Copy container images to all nodes 
+  include_tasks: "container_images.yml"
+  when: airgapped_environment

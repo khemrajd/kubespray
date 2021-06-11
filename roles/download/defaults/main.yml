@@ -14,6 +14,9 @@ download_force_cache: false
 # Used to only evaluate vars from download role
 skip_downloads: false
 
+#used for copying kubernetes components in airgapped environment
+airgapped_environment: false
+
 # Optionally skip kubeadm images download
 skip_kubeadm_images: false
 kubeadm_images: {}
