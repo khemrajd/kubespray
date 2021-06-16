@@ -3,7 +3,7 @@
   pip:
           #requirements: "{{install_dir}}/pip_docker_5.0.0/requirements.txt"
     name: docker
-    extra_args: "--no-index --find-links=file:{{install_dir}}/pip_docker_5.0.0"
+    extra_args: "--no-index --find-links=file:{{install_dir}}/pip_docker_5.0.0 --user"
 
 - name: install multiple rpm package from local path
   yum:

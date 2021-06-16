@@ -11,11 +11,12 @@ OFFLINE_PKG_DIR="offline_files/local"
 #$$$$$$$$ Helper functions $$$$$$$$
 usage()
 {
-  _info "Usage: $0 -u REMOTE_USER -p REMOTE_USER_PSWD [ -i INVENTORY_FILE_PATH ] [--prompt]
+  _info "Usage: $0 -u REMOTE_USER -p REMOTE_USER_PSWD [ -i INVENTORY_FILE_PATH ] [--args \"ANSIBLE_ARGS\"] [--prompt]
   Options:
     -u|--username  <REMOTE_USER>          Specify the user name to connect to remote hosts. User must have SUDO access
     -p|--paswword  <REMOTE_USER_PSWD>     Specify the password for REMOTE_USER
-    -i|--inventory <INVENTORY_FILE_PATH>  Specify the inventory file host path		
+    -i|--inventory <INVENTORY_FILE_PATH>  Specify the inventory file host path
+    --args         \"ANSIBLE_ARGS\"	  Ansible command lie options if needed. E.g. -vvv for verbose
     --prompt				  If provided tool asks confirmation on cluster creation, else cluster creation will continue
     					  --prompt is useful to verify/customize cluster parameter if needed
   "
@@ -82,15 +83,16 @@ create_cluster()
 	grep "ansible_user=${USERNAME}" ${INVENTORYFILE} -q
 	[ $? -ne 0 ] && echo -e "[all:vars]\nansible_user=${USERNAME}" >> ${INVENTORYFILE}
 
-	ansible-playbook -i ${INVENTORYFILE} cluster.yml -b --vault-password-file ${vaultpassfile} -e "@${credfile}" -e "@${cvarfile}" | tee ${logfile}
+        #_info "ansible-playbook -i ${INVENTORYFILE} cluster.yml -b --vault-password-file ${vaultpassfile} -e @${credfile} -e @${cvarfile} ${ANSIBLE_ARGS} | tee ${logfile}"
+	ansible-playbook -i ${INVENTORYFILE} cluster.yml -b --vault-password-file ${vaultpassfile} -e @${credfile} -e @${cvarfile} ${ANSIBLE_ARGS} | tee ${logfile}
 }
 #########################
 # Main script starts here
 
-unset USERNAME PASSWORD INVENTORYFILE PROMPT
+unset USERNAME PASSWORD INVENTORYFILE PROMPT ANSIBLE_ARGS
 PROMPT=0
 
-TEMP=`getopt -o u:p:i:n?h --long username:,password:,inventory:,prompt -- "$@"`
+TEMP=`getopt -o u:p:i:n?h --long username:,password:,inventory:,args:,prompt -- "$@"`
 eval set -- "$TEMP"
 # extract options and their arguments into variables.
 while true ; do
@@ -99,6 +101,7 @@ while true ; do
     -u|--username) 	USERNAME=$2; shift 2 ;;
     -p|--password) 	PASSWORD=$2; shift 2 ;;
     -i|--inventory) INVENTORYFILE=$2; shift 2 ;;
+    --args) ANSIBLE_ARGS=$2; shift 2;;
     --prompt) PROMPT=1; shift ;;
     -h|?|--help) usage ;;
     --) shift ; break ;;
@@ -111,6 +114,7 @@ done
 [ -z "${USERNAME}" ] && usage
 [ -z "${PASSWORD}" ] && usage
 
+_info "$ANSIBLE_ARGS"; 
 # default inventory
 [ -z "${INVENTORYFILE}" ] && INVENTORYFILE="inventory/ss8-k8s-cluster/inventory.ini"
 [ ! -f ${INVENTORYFILE} ] && _error "Inventory file does not exist"
@@ -137,7 +141,7 @@ else
       case ${yn} in
         [Yy]* ) create_cluster; break;;
         [Nn]* ) _error "You can run below command to create cluster
-  'ansible-playbook -i ${INVENTORYFILE} cluster.yml -b -e@${cvarfile} -K'";;
+  'ansible-playbook -i ${INVENTORYFILE} cluster.yml -b -e@${cvarfile} ${ANSIBLE_ARGS} -K'";;
         * ) echo "Please answer yes or no.";;
       esac
     done

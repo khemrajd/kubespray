@@ -1,8 +1,19 @@
 ---
+#- name: Stop if the required space is not available on the cluster hosts
+  #TODO : Srikant add some magic here : use image_store_path variable
+
 - name: Copy and unarchive offline files 
   hosts: k8s_cluster
   gather_facts: False
   tasks:
+    - name: Check "{{image_store_path}}" freespace
+      shell: "df {{image_store_path}} --output\=avail | tail -1"
+      register: freespace
+
+    - fail:
+        msg: "{{image_store_path}} does not have the minimum space required to continue (1.5Gb requested)."
+      when: freespace.stdout|float is lt 1500000
+
     - unarchive:
-        src: "{{playbook_dir}}/offline_files/{{remote_dir}}.tgz"
+        src: "{{offline_files_dir}}/{{remote_dir}}.tgz"
         dest: "{{image_store_path}}"

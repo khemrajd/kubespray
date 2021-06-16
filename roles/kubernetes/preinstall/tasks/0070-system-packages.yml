@@ -39,6 +39,16 @@
   tags:
     - bootstrap-os
 
+- name: import tasks to install epel and selinux and prereq packages along with dependencies
+  import_tasks: 0071-airgapped-system-packages.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - not is_fedora_coreos
+      #    - epel_enabled|bool
+    - airgapped_environment
+  tags:
+    - bootstrap-os
+
 - name: Install epel-release on RHEL derivatives
   package:
     name: epel-release
@@ -47,6 +57,7 @@
     - ansible_os_family == "RedHat"
     - not is_fedora_coreos
     - epel_enabled|bool
+    - not airgapped_environment
   tags:
     - bootstrap-os
 
