@@ -1,31 +1,28 @@
 ---
 cluster_name: 'ss8-k8s-cluster'
+
+## Conditions
 airgapped_environment: 'true'
+override_system_hostname: false
+helm_enabled: 'True'
+
+## System paths
 image_store_path: "/tmp"
 remote_dir: "remote"
+epel_dir: "epel"
 image_dir: "container_images"
 install_dir: "{{image_store_path}}/{{remote_dir}}"
-epel_dir: "epel"
-helm_enabled: 'True'
-offline_files_dir: "{{playbook_dir}}/offline_files"
+offline_files_path: "offline_files"
+offline_files_dir: "{{playbook_dir}}/{{offline_files_path}}"
 files_repo: "{{offline_files_dir}}/local"
+image_reset_file: "{{playbook_dir}}/.docker_image_list"
+
+## List vars
 docker_ce_rpm_list:
 - containerd.io-1.4.6-3.1.el8.x86_64.rpm
 - docker-ce-19.03.13-3.el8.x86_64.rpm
 - docker-ce-cli-19.03.13-3.el8.x86_64.rpm
-override_system_hostname: false
+
 list_general_packages:
-  - ipvsadm-1.31-1.el8.x86_64.rpm
-    #  - rsync-3.1.3-7.el8.x86_64.rpm
-    #- rsync-daemon-3.1.3-7.el8.noarch.rpm
-    #  - bash-completion-2.7-5.el8.noarch.rpm
-    #- curl-7.61.1-12.el8.x86_64.rpm
-    #- e2fsprogs-1.45.4-3.el8.x86_64.rpm
-    #- epel-release-8-8.el8.noarch.rpm
-    #- ipset-7.1-1.el8.x86_64.rpm
-    #- iptables-ebtables-1.8.4-10.el8_2.1.x86_64.rpm
-    #- openssl-1.1.1c-15.el8.x86_64.rpm
-    #- python3-libselinux-2.9-3.el8.x86_64.rpm
-    #- socat-1.7.3.3-2.el8.x86_64.rpm
-    #- unzip-6.0-43.el8.x86_64.rpm
-    #- xfsprogs-5.0.0-2.el8.x86_64.rpm 
+    - ipvsadm-1.31-1.el8.x86_64.rpm
+    - socat-1.7.3.3-2.el8.x86_64.rpm

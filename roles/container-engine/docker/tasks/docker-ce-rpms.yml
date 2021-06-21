@@ -1,7 +1,6 @@
 ---
 - name: install pip docker files 
   pip:
-          #requirements: "{{install_dir}}/pip_docker_5.0.0/requirements.txt"
     name: docker
     extra_args: "--no-index --find-links=file:{{install_dir}}/pip_docker_5.0.0 --user"
 
@@ -9,6 +8,7 @@
   yum:
     name: "{{install_dir}}/{{item}}"
     state: present
+    disable_gpg_check: yes
   with_items: "{{docker_ce_rpm_list}}"
 
 - name: Add a docker group

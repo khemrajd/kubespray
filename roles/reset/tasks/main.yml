@@ -1,4 +1,11 @@
 ---
+- name: Gather docker images list from kube-system namespace
+  shell: >-
+     {{bin_dir}}/kubectl describe pods -n kube-system | grep " Image:" | awk '{print $2}' | sort | uniq
+  register: docker_images_out
+  delegate_to: kube_controller_nodes
+  #delegate_to: "{{groups[kube_controller_nodes] | first}}"
+
 - name: reset | stop services
   service:
     name: "{{ item }}"
@@ -238,6 +245,12 @@
     - enable_nodelocaldns|default(false)|bool
     - nodelocaldns_device.stat.exists
 
+- name: Remove docker images of the pods which are part of kube-system namespace
+  community.docker.docker_image:
+    state: absent
+    name: "{{item}}"
+  with_items: "{{docker_images_out.stdout_lines}}"
+
 - name: reset | delete some files and directories
   file:
     path: "{{ item }}"
@@ -247,6 +260,8 @@
     - /var/lib/kubelet
     - "{{ ansible_env.HOME | default('/root') }}/.kube"
     - "{{ ansible_env.HOME | default('/root') }}/.helm"
+    - "{{ ansible_user }}/.kube"
+    - "{{ ansible_user }}/.helm"
     - "{{ etcd_data_dir }}"
     - "{{ etcd_events_data_dir }}"
     - "{{ etcd_config_dir }}"

@@ -28,24 +28,31 @@ _error() { echo -e "$@ \nExiting..."; exit 2; }
 _info() { echo -e "\n$@"; }
 
 ## install the kubespray ansible required packages
-install_pip_packages()
+install_anisble()
 {
-    _info "Installing kubespray pre-requisites"
-
     # 1. Install ansible rpm dependency
     TMPRPMDIR=".rpm_tmp"
     cp -r ${OFFLINE_PKG_DIR}/ansible_rpms ${TMPRPMDIR}
     echo "${PASSWORD}" |sudo -S yum install -y ${TMPRPMDIR}/*.rpm
     rm -rf ${TMPRPMDIR}
-    # 2. Install ansible pip dependency
-    sudo pip install --no-index --find-links=${OFFLINE_PKG_DIR}/ansible_kube_pippkgs -r requirements.txt
+}
 
-    # 3. Install ansible collection dependency
+install_dependency()
+{
+    _info "Installing kubespray pre-requisites"
+
+    # 2. make ython3 as default
+    echo ${PASSWORD} | sudo -S ln -sf /usr/bin/python3.6 /usr/bin/python
+    echo ${PASSWORD} | sudo -S ln -sf /usr/bin/pip3.6  /usr/bin/pip
+
+    # 3. Install ansible pip dependency
+    pip install --user --no-index --find-links=${OFFLINE_PKG_DIR}/ansible_kube_pippkgs -r requirements.txt
+
+    # 4. Install ansible collection dependency
     ansible-galaxy collection install ${OFFLINE_PKG_DIR}/ansible_collections_files/community/community-docker-1.6.1.tar.gz
 
     _info "kubespray pre-requisites installed"
 }
-
 ## copy private key to node to enable passwoedless ssh
 enable_ssh()
 {
@@ -73,6 +80,9 @@ enable_ssh()
 ## generate vault to decrypt credentials
 generate_vault()
 {
+        ## to read/write files change owner to current user
+        echo ${PASSWORD} | sudo -S chown -R ${USERNAME}:${USERNAME} .
+
 	echo ${vaultpass} > ${vaultpassfile}
 	echo "ansible_sudo_pass: ${PASSWORD}" > ${credfile}
 	ansible-vault encrypt --vault-password-file=${vaultpassfile} ${credfile}
@@ -114,18 +124,19 @@ done
 [ -z "${USERNAME}" ] && usage
 [ -z "${PASSWORD}" ] && usage
 
-_info "$ANSIBLE_ARGS"; 
 # default inventory
-[ -z "${INVENTORYFILE}" ] && INVENTORYFILE="inventory/ss8-k8s-cluster/inventory.ini"
+[ -z "${INVENTORYFILE}" ] && INVENTORYFILE="inventory/sample/inventory.ini"
 [ ! -f ${INVENTORYFILE} ] && _error "Inventory file does not exist"
 _info "Inventory file is being used: [${INVENTORYFILE}]"
 
+_info "Ansible extra arguments: [${ANSIBLE_ARGS}]"; 
+
 ####  Install ansible only if not installed
 ansible --version
-[ $? -ne 0 ] &&
-       	install_pip_packages
+[ $? -ne 0 ] && install_anisble
 ####
 
+install_dependency
 enable_ssh
 generate_vault
 

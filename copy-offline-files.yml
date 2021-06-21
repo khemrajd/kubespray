@@ -1,13 +1,11 @@
 ---
-#- name: Stop if the required space is not available on the cluster hosts
-  #TODO : Srikant add some magic here : use image_store_path variable
 
 - name: Copy and unarchive offline files 
   hosts: k8s_cluster
   gather_facts: False
   tasks:
     - name: Check "{{image_store_path}}" freespace
-      shell: "df {{image_store_path}} --output\=avail | tail -1"
+      shell: df "{{image_store_path}}" --output\=avail | tail -1
       register: freespace
 
     - fail:
