@@ -1,0 +1,10 @@
+---
+- name: install rpms needed by kubespray 
+  become: yes
+  yum:
+    name: "{{install_dir}}/{{epel_dir}}/{{item}}"
+    state: present
+    disable_gpg_check: yes
+  with_items: "{{list_general_packages}}"
+  register: general_packages_out
+
