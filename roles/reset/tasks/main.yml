@@ -3,8 +3,8 @@
   shell: >-
      {{bin_dir}}/kubectl describe pods -n kube-system | grep " Image:" | awk '{print $2}' | sort | uniq
   register: docker_images_out
-  delegate_to: kube_controller_nodes
-  #delegate_to: "{{groups[kube_controller_nodes] | first}}"
+  delegate_to: "{{ groups['kube_controller_nodes'][0] }}"
+  run_once: True   ## List can be generated only once 
 
 - name: reset | stop services
   service:
