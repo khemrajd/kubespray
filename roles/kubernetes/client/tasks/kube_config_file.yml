@@ -23,6 +23,7 @@
 - name: Set kubeconfig for non root user
   lineinfile:
     path: /home/{{ansible_user}}/.bashrc
+    regexp: '^export KUBECONFIG'
     line: export KUBECONFIG="{{kubedir}}/config"
     create: yes
     backup: yes
