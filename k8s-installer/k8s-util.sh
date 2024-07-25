@@ -1,19 +1,12 @@
 #!/bin/bash
-####  ####  ####
-#     #     #  #
-####  ####  ####
-   #     #  #  #
-####  ####  ####
-
-## Copyrights: SS8 Networks, Inc. 2024
-# ski-util.sh
+# k8s-util.sh
 # This is utility script having common helper functions
 ##
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 GREEN='\033[0;32m'
-PREINSTALLDIR="${KUBESPRAYDIR}/ss8-ski-pre-install"
-POSTINSTALLDIR="${KUBESPRAYDIR}/ss8-ski-post-install"
+PREINSTALLDIR="${KUBESPRAYDIR}/k8s-pre-install"
+POSTINSTALLDIR="${KUBESPRAYDIR}/k8s-post-install"
 
 #Print error and exit
 function _error() {
@@ -146,4 +139,4 @@ function setup_password_less_ssh(){
     done
 } #End: setup_password_less_ssh
 
-# End: ski-util.sh
+# End: k8s-util.sh

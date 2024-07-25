@@ -7,7 +7,7 @@
 
 CURRENTDIR=$(cd $(dirname $0); pwd)
 KUBESPRAYDIR=${CURRENTDIR}/..
-source ${KUBESPRAYDIR}/ski-util.sh
+source ${KUBESPRAYDIR}/k8s-util.sh
 
 #$$8 $$8 $$8 $$8 ^Helper functions^ 8$$ 8$$ 8$$ 8$S
 usage()

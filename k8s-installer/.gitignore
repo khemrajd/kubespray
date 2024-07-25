@@ -3,6 +3,8 @@
 **/vagrant_ansible_inventory
 *.iml
 temp
+k8s-pre-install/k8s-v1.29.5-offline-files
+k8s-pre-install/k8s-v1.29.5-offline-files.tgz
 contrib/offline/offline-files
 contrib/offline/offline-files.tar.gz
 .idea

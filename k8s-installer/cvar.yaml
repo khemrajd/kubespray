@@ -1,7 +1,7 @@
 ## Storage
 k8s_version: v1.29.5
 ansible_version: core 2.16.8
-tmp_dir: "/SS8/tmp"
+tmp_dir: "/tmp"
 offline_dir: "k8s-{{k8s_version}}-offline-files"
 local_release_dir: "{{tmp_dir}}/{{offline_dir}}"
 download_cache_dir: "{{tmp_dir}}/{{offline_dir}}"

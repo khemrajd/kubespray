@@ -6,7 +6,7 @@
 ## Provide correct IP/Hostnames in inventory file before running script.
 
 KUBESPRAYDIR=$(cd $(dirname $0); pwd)
-source ${KUBESPRAYDIR}/ski-util.sh
+source ${KUBESPRAYDIR}/k8s-util.sh
 
 #$$8 $$8 $$8 $$8 ^Helper functions^ 8$$ 8$$ 8$$ 8$S
 #User guide

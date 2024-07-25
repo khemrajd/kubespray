@@ -32,10 +32,10 @@ registry_port=5000 (default)
 * Offline files: registry image, containerd and nerdctl binaries 
 
 ### Registry creation command along with k8s cluster creation (need to set this value true "create_registry=true"): ###
-* :  ss8-ski-pre-install/registry-setup.sh -i ss8-ski-pre-install/registry.ini -u REMOTE_USER -p REMOTE_USER_PSWD [--args -vv]
+* :  k8s-pre-install/registry-setup.sh -i k8s-pre-install/registry.ini -u REMOTE_USER -p REMOTE_USER_PSWD [--args -vv]
  Optionally:
- ./kubespray-venv/bin/ansible-playbook -b -e@cvar.yaml -v ss8-ski-pre-install/registry.yml \
- -e ansible_user=support -e ansible_sudo_pass=ss8inc -i ss8-ski-pre-install/registry.ini
+ ./kubespray-venv/bin/ansible-playbook -b -e@cvar.yaml -v k8s-pre-install/registry.yml \
+ -e ansible_user=support -e ansible_sudo_pass=ss8inc -i k8s-pre-install/registry.ini
 
 
 #### To verify whether registry is up running as expected ####
