@@ -1,0 +1,35 @@
+---
+- name: check the /etc/resolv.conf file exists
+  stat:
+    path: /etc/resolv.conf
+  register: resolvconf_file_exists_status
+
+- name: create resolvconf file if file does not exists
+  file:
+     path: /etc/resolv.conf
+     state: touch
+     owner: 'root'
+     group: 'root'
+     mode: 644
+  when: not resolvconf_file_exists_status.stat.exists
+
+- name: check system nameservers
+  shell: grep "^nameserver" /etc/resolv.conf | sed -r 's/^nameserver\s*([^#\s]+)\s*(#.*)?/\1/'
+  args:
+    executable: /bin/bash
+  changed_when: False
+  register: nameserver_string_status
+  check_mode: no
+  when: resolvconf_file_exists_status.stat.exists
+
+- name: add nameserver in host /etc/resolv.conf
+  lineinfile:
+     path: /etc/resolv.conf
+     state: present
+     line: "nameserver {{ansible_host}}"
+     regexp: '^nameserver'
+     backup: yes
+  when:
+    - (not resolvconf_file_exists_status.stat.exists) or nameserver_string_status.stdout == "nameserver" or nameserver_string_status.stdout == "" or nameserver_string_status.stdout == " "
+
+

@@ -1,0 +1,33 @@
+- name: post cluster reset jobs
+  hosts: etcd:k8s_cluster:calico_rr
+  become: true
+  gather_facts: false
+  tasks:
+    - name: get file stat for /etc/sysctl.conf
+      stat:
+        path: "{{tmp_dir}}/sysctl.conf.BackupBySki"
+      register: backupetcconf
+
+    - name: Restore /etc/sysctl.conf
+      copy:
+        src: "{{tmp_dir}}/sysctl.conf.BackupBySki"
+        dest: /etc/sysctl.conf
+        remote_src: yes
+      when: backupetcconf.stat.exists
+
+- name: delete kubens and kubectx
+  hosts: kube_control_plane
+  become: true
+  gather_facts: false
+  vars:
+    bin_dir: "/usr/local/bin"
+  tasks:
+    - name: delete kubens and kubectx
+      file:
+        path: "{{item}}"
+        state: absent
+      with_items:
+      - "{{bin_dir}}/kubectx"
+      - "{{bin_dir}}/kubens"
+
+# End: postreset.yaml

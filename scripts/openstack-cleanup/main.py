@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import openstack
 import logging
 import datetime
 import time
-from pprint import pprint
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 PAUSE_SECONDS = 5
@@ -43,8 +42,29 @@ def main():
                conn.network.security_groups())
 
     print('Ports...')
-    map_if_old(conn.network.delete_port,
-               conn.network.ports())
+    try:
+        map_if_old(conn.network.delete_port,
+                   conn.network.ports())
+    except openstack.exceptions.ConflictException as ex:
+        # Need to find subnet-id which should be removed from a router
+        for sn in conn.network.subnets():
+            try:
+                fn_if_old(conn.network.delete_subnet, sn)
+            except openstack.exceptions.ConflictException:
+                for r in conn.network.routers():
+                    print("Deleting subnet %s from router %s", sn, r)
+                    try:
+                        conn.network.remove_interface_from_router(
+                            r, subnet_id=sn.id)
+                    except Exception as ex:
+                        print("Failed to delete subnet from router as %s", ex)
+
+        for ip in conn.network.ips():
+            fn_if_old(conn.network.delete_ip, ip)
+                
+        # After removing unnecessary subnet from router, retry to delete ports
+        map_if_old(conn.network.delete_port,
+                   conn.network.ports())
 
     print('Subnets...')
     map_if_old(conn.network.delete_subnet,

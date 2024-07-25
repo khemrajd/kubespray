@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 import boto3
@@ -39,7 +39,7 @@ class SearchEC2Tags(object):
       hosts[group] = []
       tag_key = "kubespray-role"
       tag_value = ["*"+group+"*"]
-      region = os.environ['REGION']
+      region = os.environ['AWS_REGION']
 
       ec2 = boto3.resource('ec2', region)
       filters = [{'Name': 'tag:'+tag_key, 'Values': tag_value}, {'Name': 'instance-state-name', 'Values': ['running']}]
@@ -67,9 +67,14 @@ class SearchEC2Tags(object):
         if node_labels_tag:
           ansible_host['node_labels'] = dict([ label.strip().split('=') for label in node_labels_tag[0]['Value'].split(',') ])
 
+        ##Set when instance actually has node_taints
+        node_taints_tag = list(filter(lambda t: t['Key'] == 'kubespray-node-taints', instance.tags))
+        if node_taints_tag:
+          ansible_host['node_taints'] = list([ taint.strip() for taint in node_taints_tag[0]['Value'].split(',') ])
+
         hosts[group].append(dns_name)
         hosts['_meta']['hostvars'][dns_name] = ansible_host
-        
+
     hosts['k8s_cluster'] = {'children':['kube_control_plane', 'kube_node']}
     print(json.dumps(hosts, sort_keys=True, indent=2))
 

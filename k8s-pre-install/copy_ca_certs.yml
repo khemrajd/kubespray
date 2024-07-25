@@ -1,0 +1,51 @@
+---
+## This task is added to use third party ca certs for cluster creation if present in cadir
+- name: check presence of ca.crt and ca.key in cadir
+  stat:
+    path: "{{cadir}}/ca.crt"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: thirdparty_cacerts
+  delegate_to: localhost
+
+- name: Stop if ca.crt and ca.key are not present in cadir
+  assert:
+    that:
+      - thirdparty_cacerts.stat.exists
+      - thirdparty_cacerts.stat.isreg
+    fail_msg: "third party ca.crt does not exists in {{cadir}}"
+    success_msg: "third party ca.crt exists in {{cadir}}"
+
+- name: "Create kubernetes cert directories {{ kube_cert_dir }} | {{etcd_cert_dir}}"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    group: root
+    owner: root
+  with_items:
+    - "{{kube_cert_dir}}"
+    - "{{etcd_cert_dir}}"
+
+- name: "Copy ca certs to {{ kube_cert_dir }}"
+  copy:
+    src: "{{ cadir }}/{{ item }}"
+    dest: "{{ kube_cert_dir }}/{{ item }}"
+    remote_src: no
+  with_items:
+    - "ca.key"
+    - "ca.crt"
+
+### Etcd expects ca cert/key as pem files
+- name: "Copy ca certs to {{ etcd_cert_dir }}"
+  copy:
+    src: "{{ cadir }}/ca.crt"
+    dest: "{{ etcd_cert_dir}}/ca.pem"
+    remote_src: no
+
+- name: "Copy ca key to {{ etcd_cert_dir }}"
+  copy:
+    src: "{{ cadir }}/ca.key"
+    dest: "{{ etcd_cert_dir }}/ca-key.pem"
+    remote_src: no

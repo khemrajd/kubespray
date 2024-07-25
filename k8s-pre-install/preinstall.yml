@@ -1,0 +1,38 @@
+---
+- name: k8s cluster pre-installation
+  hosts: etcd:k8s_cluster:calico_rr
+  become: true
+  gather_facts: true
+  vars:
+    kube_cert_dir: "/etc/kubernetes/ssl"
+    etcd_cert_dir: "/etc/ssl/etcd/ssl"
+    extra_dirs: ["{{tmp_dir}}"]
+
+  tasks:
+    - name: prechecks
+      include_tasks: prechecks/main.yml
+      when: prechecks | default(false) | bool
+
+    ## copy third part ca certs only when cadir is defined and ca.crt/ca.key is present in cadir
+    - include_tasks: copy_ca_certs.yml
+      when: cadir is defined
+
+    - name: push offline files
+      include_tasks: push_files.yml
+
+    - name: get file stat for /etc/sysctl.conf
+      stat:
+        path: /etc/sysctl.conf
+      register: etcconf
+
+    - name: Backup /etc/sysctl.conf
+      copy:
+        src: /etc/sysctl.conf
+        dest: "{{tmp_dir}}/sysctl.conf.BackupBySki"
+        remote_src: yes
+      when: etcconf.stat.exists
+
+    - name: Make kubespray happy with nameserver in /etc/resolv.conf
+      include_tasks: set_dns.yml 
+
+# End: preinstall.yml

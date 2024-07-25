@@ -1,0 +1,9 @@
+---
+# defaults file for roles/containerd_registry
+platform: "linux"
+arch: "amd64"
+registry_tag: "{{registry_image_tag}}"
+cert_dir: "/SS8/certs"
+registry_container_name: "ss8-registry"
+registry_volume: "/SS8/registry"
+registry_port: 443

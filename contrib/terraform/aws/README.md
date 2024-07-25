@@ -36,8 +36,7 @@ terraform apply -var-file=credentials.tfvars
 ```
 
 - Terraform automatically creates an Ansible Inventory file called `hosts` with the created infrastructure in the directory `inventory`
-- Ansible will automatically generate an ssh config file for your bastion hosts. To connect to hosts with ssh using bastion host use generated ssh-bastion.conf.
-  Ansible automatically detects bastion and changes ssh_args  
+- Ansible will automatically generate an ssh config file for your bastion hosts. To connect to hosts with ssh using bastion host use generated `ssh-bastion.conf`. Ansible automatically detects bastion and changes `ssh_args`
 
 ```commandline
 ssh -F ./ssh-bastion.conf user@$ip
@@ -51,70 +50,32 @@ Example (this one assumes you are using Ubuntu)
 ansible-playbook -i ./inventory/hosts ./cluster.yml -e ansible_user=ubuntu -b --become-user=root --flush-cache
 ```
 
-***Using other distrib than Ubuntu***
-If you want to use another distribution than Ubuntu 18.04 (Bionic) LTS, you can modify the search filters of the 'data "aws_ami" "distro"' in variables.tf.
+## Using other distrib than Ubuntu***
 
-For example, to use:
+To leverage a Linux distribution other than Ubuntu 18.04 (Bionic) LTS for your Terraform configurations, you can adjust the AMI search filters within the 'data "aws_ami" "distro"' block by utilizing variables in your `terraform.tfvars` file. This approach ensures a flexible configuration that adapts to various Linux distributions without directly modifying the core Terraform files.
 
-- Debian Jessie, replace 'data "aws_ami" "distro"' in variables.tf with
+### Example Usages
 
-```ini
-data "aws_ami" "distro" {
-  most_recent = true
+- **Debian Jessie**: To configure the usage of Debian Jessie, insert the subsequent lines into your `terraform.tfvars`:
 
-  filter {
-    name   = "name"
-    values = ["debian-jessie-amd64-hvm-*"]
-  }
+  ```hcl
+  ami_name_pattern        = "debian-jessie-amd64-hvm-*"
+  ami_owners              = ["379101102735"]
+  ```
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+- **Ubuntu 16.04**: To utilize Ubuntu 16.04 instead, apply the following configuration in your `terraform.tfvars`:
 
-  owners = ["379101102735"]
-}
-```
+  ```hcl
+  ami_name_pattern        = "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-*"
+  ami_owners              = ["099720109477"]
+  ```
 
-- Ubuntu 16.04, replace 'data "aws_ami" "distro"' in variables.tf with
+- **Centos 7**: For employing Centos 7, incorporate these lines into your `terraform.tfvars`:
 
-```ini
-data "aws_ami" "distro" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"]
-}
-```
-
-- Centos 7, replace 'data "aws_ami" "distro"' in variables.tf with
-
-```ini
-data "aws_ami" "distro" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["dcos-centos7-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["688023202711"]
-}
-```
+  ```hcl
+  ami_name_pattern        = "dcos-centos7-*"
+  ami_owners              = ["688023202711"]
+  ```
 
 ## Connecting to Kubernetes
 

@@ -1,0 +1,14 @@
+---
+- name: create containerd private registry
+  hosts: registry[0]
+  become: true
+  gather_facts: true
+  vars:
+    registry_ip: "{{hostvars[groups['registry'][0]]['ansible_host']}}"
+  roles:
+  - role: kubespray-defaults
+  - { role: adduser, user: "{{ addusers.kube }}" }
+  - { role: containerd_registry, registry_endpoint: "{{registry_ip}}:{{registry_port | default('443')}}", cert_dir: "/SS8/certs/{{registry_endpoint | replace(':','_')}}" }
+
+#End: registry.yml
+

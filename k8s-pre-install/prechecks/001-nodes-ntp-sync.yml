@@ -1,0 +1,14 @@
+---
+### This playbook fetch the current time on all nodes and display the difference with current time of primary controller node system time
+### We use this to verify whether all node participating in k8s cluster are NTP synced or not
+
+
+- name: Date and time diff checking using clockdiff command
+  shell: "/usr/sbin/clockdiff -o {{hostvars[groups['kube_control_plane'][0]]['ansible_host']}}"
+  register: command_out
+
+- name: Print the message if the time difference in nodes more than the limit in ms
+  assert:
+     that: "command_out.stdout_lines[0].split(' ')[1] | int | abs <= 100"
+     fail_msg: "this server is not NTP synced. Do NTP sync all servers and retry"
+

@@ -1,0 +1,7 @@
+- name: "Check cluster_name defined correctly"
+  assert:
+    that:
+    - "cluster_name is defined"
+    - "cluster_name is match('^[a-z0-9-_\\\\.]+[a-z0-9]$')"
+    msg: "cluster_name contains invalid characters. It must be lower case alphanumeric and no special chars"
+  run_once: true

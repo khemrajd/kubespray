@@ -1,0 +1,45 @@
+---
+- name: copy a template as a registry tls configuration file
+  template:
+    src: "lis.conf.j2"
+    dest: "{{cert_dir}}/lis.conf"
+
+## Use third party CA cert is present
+- name: "Copy ca certs to {{ cert_dir }}"
+  copy:
+    src: "{{ cadir }}/{{ item }}"
+    dest: "{{ cert_dir }}/{{ item }}"
+    remote_src: no
+  with_items:
+    - "ca.key"
+    - "ca.crt"
+  when: cadir is defined
+
+### Generate self-signed certs if third party CA cert is not present
+- name: Create self signed certs if not provided in cadir
+  command: "{{item}}"
+  args:
+     chdir: "{{cert_dir}}"
+  with_items:
+    - openssl genrsa -out ca.key 4096
+    - openssl req -new -x509 -key ca.key -sha256 -subj "/C=US/ST=CA/O=SS8" -days 7650 -out ca.crt
+  when: cadir is not defined
+
+- name: "Generate certicates in {{cert_dir}}"
+  command: "{{item}}"
+  args:
+     chdir: "{{cert_dir}}"
+  with_items:
+    - openssl genrsa -out lis.key 4096
+    - openssl req -new -key lis.key -out lis.csr -config lis.conf
+    - openssl x509 -req -in lis.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out lis.crt -days 7650 -sha256 -extfile lis.conf -extensions req_ext
+  run_once: true
+
+# Will use ca.crt for copying to cluster nodes
+- name: copy ca.crt from registrynode to local
+  fetch:
+    src: "{{cert_dir}}/ca.crt"
+    dest: "{{cert_dir}}/"
+    flat: yes
+
+#End: tls_setup.yml

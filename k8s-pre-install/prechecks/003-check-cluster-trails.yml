@@ -1,0 +1,10 @@
+---
+- name: checking kubelet present on cluster node
+  stat:
+    path: "{{bin_dir}}/kubelet"
+  register: kubelet_exist
+
+- name: Stop if kubelet present on node
+  assert:
+    that: kubelet_exist.stat.exists != true
+    fail_msg: "This node is part of another cluster. Exiting..."

@@ -1,19 +1,11 @@
 [all]
 {% for instance in vms.results %}
-instance-{{ loop.index }} ansible_ssh_host={{instance.stdout}}
+instance-{{ loop.index }} ansible_host={{instance.stdout}}
 {% endfor %}
 
 {% if mode is defined and mode in ["separate", "separate-scale"] %}
 [kube_control_plane]
 instance-1
-
-# TODO(oomichi): Remove all kube-master groups from this file after releasing v2.16.
-[kube-master]
-instance-1
-
-# TODO(cristicalin): Remove kube-node,k8s-cluster groups from this file after releasing v2.16.
-[kube-node]
-instance-2
 
 [kube_node]
 instance-2
@@ -24,13 +16,6 @@ instance-3
 [kube_control_plane]
 instance-1
 instance-2
-
-[kube-master]
-instance-1
-instance-2
-
-[kube-node]
-instance-3
 
 [kube_node]
 instance-3
@@ -43,25 +28,13 @@ instance-3
 [kube_control_plane]
 instance-1
 
-[kube-master]
-instance-1
-
-[kube-node]
-instance-2
-
 [kube_node]
 instance-2
 
 [etcd]
 instance-1
-{% elif mode == "aio" %}
+{% elif mode == "all-in-one" %}
 [kube_control_plane]
-instance-1
-
-[kube-master]
-instance-1
-
-[kube-node]
 instance-1
 
 [kube_node]
@@ -73,13 +46,6 @@ instance-1
 [kube_control_plane]
 instance-1
 instance-2
-
-[kube-master]
-instance-1
-instance-2
-
-[kube-node]
-instance-3
 
 [kube_node]
 instance-3
@@ -100,14 +66,6 @@ instance-3
 instance-1
 instance-2
 
-[kube-master]
-instance-3
-instance-1
-instance-2
-
-[kube-node]
-instance-3
-
 [kube_node]
 instance-3
 
@@ -123,16 +81,25 @@ instance-2
 [broken_etcd]
 instance-1 etcd_member_name=etcd2
 instance-2 etcd_member_name=etcd3
-{% endif %}
+{% elif mode == "node-etcd-client" %}
+[kube_control_plane]
+instance-1
 
-[k8s-cluster:children]
-kube-node
-kube-master
-calico-rr
+[etcd]
+instance-1
+instance-2
+instance-3
+
+[kube_node]
+instance-1
+instance-2
+instance-3
+instance-4
+{% endif %}
 
 [k8s_cluster:children]
 kube_node
-kube_master
+kube_control_plane
 calico_rr
 
 [calico_rr]

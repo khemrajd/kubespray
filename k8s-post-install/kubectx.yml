@@ -1,0 +1,32 @@
+- name: Copy kubens and kubectx
+  hosts: kube_control_plane
+  become: true
+  gather_facts: false
+  vars:
+    local_dir: "/usr/local"
+    kubectx_ver: "kubectx-0.3.1"
+
+  tasks:    
+    - name: extract kubectx files
+      become: yes
+      unarchive:
+        src: "{{tmp_dir}}/{{offline_dir}}/{{kubectx_ver}}.tar.gz"
+        dest: "{{local_dir}}"
+        owner: "{{ansible_user}}"
+        group: "{{ansible_user}}"
+        remote_src: true
+        mode: 755
+
+    - name: create soft link for kubectx and kubens
+      file:
+        src: "{{local_dir}}/{{kubectx_ver}}/{{item}}"
+        dest: "{{local_dir}}/bin/{{item}}"
+        owner: "{{ansible_user}}"
+        group: "{{ansible_user}}"
+        mode: 755
+        state: link
+      with_items:
+      - kubectx
+      - kubens
+  
+# End: kubectx.yml

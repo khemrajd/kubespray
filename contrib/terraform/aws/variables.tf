@@ -20,20 +20,38 @@ variable "aws_cluster_name" {
   description = "Name of AWS Cluster"
 }
 
+variable "ami_name_pattern" {
+  description = "The name pattern to use for AMI lookup"
+  type        = string
+  default     = "debian-10-amd64-*"
+}
+
+variable "ami_virtualization_type" {
+  description = "The virtualization type to use for AMI lookup"
+  type        = string
+  default     = "hvm"
+}
+
+variable "ami_owners" {
+  description = "The owners to use for AMI lookup"
+  type        = list(string)
+  default     = ["136693071363"]
+}
+
 data "aws_ami" "distro" {
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    values = [var.ami_name_pattern]
   }
 
   filter {
     name   = "virtualization-type"
-    values = ["hvm"]
+    values = [var.ami_virtualization_type]
   }
 
-  owners = ["099720109477"] # Canonical
+  owners = var.ami_owners
 }
 
 //AWS VPC Variables
@@ -63,8 +81,16 @@ variable "aws_bastion_size" {
 * The number should be divisable by the number of used
 * AWS Availability Zones without an remainder.
 */
+variable "aws_bastion_num" {
+  description = "Number of Bastion Nodes"
+}
+
 variable "aws_kube_master_num" {
   description = "Number of Kubernetes Master Nodes"
+}
+
+variable "aws_kube_master_disk_size" {
+  description = "Disk size for Kubernetes Master Nodes (in GiB)"
 }
 
 variable "aws_kube_master_size" {
@@ -75,6 +101,10 @@ variable "aws_etcd_num" {
   description = "Number of etcd Nodes"
 }
 
+variable "aws_etcd_disk_size" {
+  description = "Disk size for etcd Nodes (in GiB)"
+}
+
 variable "aws_etcd_size" {
   description = "Instance size of etcd Nodes"
 }
@@ -83,16 +113,20 @@ variable "aws_kube_worker_num" {
   description = "Number of Kubernetes Worker Nodes"
 }
 
+variable "aws_kube_worker_disk_size" {
+  description = "Disk size for Kubernetes Worker Nodes (in GiB)"
+}
+
 variable "aws_kube_worker_size" {
   description = "Instance size of Kubernetes Worker Nodes"
 }
 
 /*
-* AWS ELB Settings
+* AWS NLB Settings
 *
 */
-variable "aws_elb_api_port" {
-  description = "Port for AWS ELB"
+variable "aws_nlb_api_port" {
+  description = "Port for AWS NLB"
 }
 
 variable "k8s_secure_api_port" {

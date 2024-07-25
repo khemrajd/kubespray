@@ -1,5 +1,8 @@
 ---
-- block:
+- name: Disable firewalld and ufw
+  when:
+  - disable_service_firewall is defined and disable_service_firewall
+  block:
   - name: List services
     service_facts:
 
@@ -9,7 +12,7 @@
       state: stopped
       enabled: no
     when:
-      "'firewalld.service' in services"
+      "'firewalld.service' in services and services['firewalld.service'].status != 'not-found'"
 
   - name: Disable service ufw
     systemd:
@@ -17,7 +20,4 @@
       state: stopped
       enabled: no
     when:
-      "'ufw.service' in services"
-
-  when:
-  - disable_service_firewall
+      "'ufw.service' in services and services['ufw.service'].status != 'not-found'"

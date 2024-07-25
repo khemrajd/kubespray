@@ -1,0 +1,57 @@
+---
+# push k8s images and binaries to registry node
+- name: containerd_registry | push offline files to registry node
+  import_tasks: "push_files.yml"
+  vars:
+    extra_dirs: "{{[registry_volume,cert_dir,tmp_dir]}}"
+
+# Install containerd and CNI plugins
+- name: containerd_registry | Install containerd and CNI plugins
+  include_role:
+    name: "{{item}}"
+  with_items:
+    - container-engine/containerd
+    - network_plugin/cni
+
+# Create compose file
+- name: containerd_registry | copy compose file template to remote server
+  template:
+    src: compose.yml.j2
+    dest: "{{cert_dir}}/compose.yml"
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+
+# Generate certificates
+- name: containerd_registry | setup tls for private registry
+  import_tasks: "tls_setup.yml"
+
+# Create registry instance
+- name: containerd_registry | load registry image
+  command: "{{bin_dir}}/nerdctl -n k8s.io load -i {{local_release_dir}}/images/docker.io_library_registry_{{registry_image_tag}}.tar"
+
+- name: containerd_registry | start registry with nerdctl compose
+  shell: "{{bin_dir}}/nerdctl compose -f {{cert_dir}}/compose.yml up -d"
+  register: compose_up_out
+
+- name: Stop if failed to start registry
+  assert:
+    that: compose_up_out.rc == 0
+
+# Create compose file
+- name: containerd_registry | generate load-tag-push.sh
+  template:
+    src: load-tag-push.sh.j2
+    dest: "{{bin_dir}}/load-tag-push.sh"
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: u+x,g+x,o+x
+
+- include_tasks: load_images.yml
+  when: registry_endpoint_pull_enabled | default('false') | bool
+
+- name: delete offline files
+  file:
+    state: absent
+    path: "{{local_release_dir}}/images"
+
+# End of main.yml

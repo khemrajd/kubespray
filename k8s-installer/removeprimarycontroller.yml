@@ -1,0 +1,92 @@
+---
+- hosts: "{{ node | default('etcd:k8s_cluster:calico_rr') }}"
+  gather_facts: no
+  tasks:
+    - name: Remove primary controller node confirm execution
+      pause:
+        prompt: "Are you sure you want to remove primary controller node ? Type 'yes' or 'no'"
+      register: pause_result
+      run_once: True
+      when:
+        - not (skip_confirmation | default(false) | bool)
+
+    - name: Fail if user does not confirm remove primary controller
+      fail:
+        msg: "Remove primary controller node confirmation failed"
+      when: pause_result.user_input | default('yes') != 'yes'
+
+### Below playbooks is automates the removal of primary controller with below mentioned steps(Except step 1 and 2)
+## Since cluster handle many tasks using primary controller, Removal of primary controller is not like other nodes in cluster
+## In order to remove primary controller, we need to follow steps as below:
+## 1. Change the primary controller information/order in inventory file --> Needs  manual intervention
+## 2. Change the etcd node order if same node is etcd now as well --> Needs  manual intervention
+## 3. Verify node order is changed in inventory
+## 4. Upgrade cluster
+## 5. Update the cluster-info with new primary controller
+## 6. Then remove old primary controller
+#
+- hosts: kube_control_plane[0]
+  become: true
+  vars:
+    bin_dir: "/usr/local/bin"
+  tasks:
+     - name: shell command to grep IP in the cluster-info content
+       shell: "{{bin_dir}}/kubectl get cm -n kube-public cluster-info -o yaml | grep {{ansible_host}}" 
+       register: store_cluster_info
+       ignore_errors: yes
+
+     ## Step 3: Task will fail with fail_msg if node order is not changed in inventory, else will continue with success_msg
+     - name: Verify {{node}} is not at the first place in the kube_controller_node group in the inventory 
+       assert: 
+         that: 
+            - store_cluster_info.rc != 0
+         success_msg: "Node {{hostvars[groups['kube_control_plane'][0]].inventory_hostname}} is a new primary controller node in inventory. Good to go to remove old primary controller node from the cluster" 
+         fail_msg: "Node {{node}} is a primary controller node in the inventory. If you want to remove the primary controller node from the cluster, please change the position of first node in the kube_controller group nodes in the inventory and retry"
+
+     - name: Verify {{node}} is not at the first place in the etcd group in the inventory 
+       assert: 
+         that: 
+            - node != hostvars[groups['etcd'][0]].inventory_hostname
+         success_msg: "Etcd group nodes order is fine. Good to go"
+         fail_msg: "Node {{node}} is a primary controller as well as primary etcd node in the inventory. If you want to remove the first etcd node from the cluster, please change the position of first node in the etcd group nodes in the inventory and retry"
+
+## Step 4
+- name: upgrade cluster
+  import_playbook: upgrade-cluster.yml 
+
+## Step 5
+- hosts: kube_control_plane[0]
+  become: true
+  vars:
+    cluster_info_file: "/tmp/cluster_info.yml"
+    bin_dir: "/usr/local/bin"
+  tasks:
+     ## Retrieve cluster info into some file, to make necessary changes
+     - name: shell command to redirect the cluster-info content to a file
+       shell: "{{bin_dir}}/kubectl get cm -n kube-public cluster-info -o yaml > {{cluster_info_file}}"
+       register: output
+     ## Make chnages in file first and then apply it in next step
+     - name: replace old primary controller node IP with new primary controller node IP in cluster-info file
+       lineinfile:
+          path: "{{cluster_info_file}}"
+          regex: '^        server'
+          line: "        server: https://{{ansible_host}}:6443"
+          backrefs: yes
+          state: present
+     ## This is where we are changing primary controller in live cluster
+     - name: apply the cluster-info file as a manifest file to update cluster information
+       shell: "{{bin_dir}}/kubectl apply -f {{cluster_info_file}}"
+       register: cluster_info_after_upgrade
+
+     - debug:
+         msg: "{{cluster_info_after_upgrade}}"
+
+     - name: remove cluster-info file from local
+       file:
+         path: "{{cluster_info_file}}"
+         state: absent
+
+### Step 6, Actual removal of node
+- name: remove node from cluster
+  import_playbook: remove-node.yml
+

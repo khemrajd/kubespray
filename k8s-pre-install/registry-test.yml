@@ -1,0 +1,66 @@
+---
+- name: Private registry server check
+  hosts: kube_node[0]
+  become: true
+  roles:
+    - role: kubespray-defaults
+  vars:
+    image: "docker.io/library/nginx:{{nginx_image_tag}}"
+    imagetar: "{{image | replace('/','_') | replace(':','_')}}.tar"
+  tasks:
+    - name: test registry operations
+      block:
+        - name: Testing registry endpoint
+          debug:
+            var: registry_endpoint
+
+        - copy:
+            src: "{{playbook_dir}}/{{offline_dir}}/images/{{imagetar}}"
+            dest: "/tmp/"
+
+        - name: Tag an image with nerdctl
+          shell: "{{bin_dir}}/nerdctl load -i /tmp/{{imagetar}}"
+          register: image_load
+
+        - name: Stop if load image failed
+          assert:
+            that: image_load.rc == 0
+
+        - name: Tag an image with nerdctl 
+          shell: "{{bin_dir}}/nerdctl tag {{image}} {{registry_endpoint}}/{{image}}"
+          register: image_tag
+
+        - name: Stop if tagging image failed
+          assert:
+            that: image_tag.rc == 0
+
+        - name: Push image to private registry
+          shell: "{{bin_dir}}/nerdctl push {{registry_endpoint}}/{{image}}"
+          register: image_push
+
+        - name: Stop if failed to push image
+          assert:
+            that: image_push.rc == 0
+
+        - name: Delete tagged image after push
+          shell: "{{bin_dir}}/nerdctl rmi {{registry_endpoint}}/{{image}}"
+
+        - name: Pull image from private registry
+          shell: "{{bin_dir}}/nerdctl pull {{registry_endpoint}}/{{image}}"
+          register: image_pull
+
+        - name: Stop if failed to pull image
+          assert:
+            that: image_pull.rc == 0
+
+        - name: Delete tagged image after push
+          shell: "{{bin_dir}}/nerdctl rmi {{registry_endpoint}}/{{image}}"
+
+        - name: delete imagetar
+          file:
+            state: absent
+            path: /tmp/{{imagetar}}
+
+      # End block test registry operations
+      when: registry_test | default(false) | bool
+#End: registry-test.yaml

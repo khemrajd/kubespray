@@ -1,0 +1,35 @@
+#!/bin/bash
+
+function _error() { /bin/echo >&2 -e "\e[101m\e[97m[ERROR]\e[49m\e[39m $@ \nExiting...";    exit 1; }
+function _info() { /bin/echo -e "\e[104m\e[97m[INFO]\e[49m\e[39m $@"; }
+
+#Execute command, exit if fail
+function _exec(){
+  local cmd="$@"
+  set -o pipefail
+  ${cmd}; retVal=$?
+  set +o pipefail
+  ([[ 0 -eq ${retVal} ]] && _info "Success\n") || (_error "Failed: [${cmd}]")
+}
+
+#image tar validation
+imagetar="${1}"
+[[ -z ${imagetar} ]] && _error "Proivde imagetar to process"
+
+#registry_endpoint validation
+registry_endpoint="${2}"
+[[ -z ${registry_endpoint} ]] && _error "Proivde registry_endpoint to push image"
+
+bin_dir="{{bin_dir}}"
+[[ -z ${bin_dir} ]] && bin_dir="/usr/local/bin"
+
+image=$(echo ${imagetar//.tar/});
+image=$(echo ${image##*/}|rev|sed 's@_@:@;s^_^/^g'|rev);
+reimage=${registry_endpoint}/$(echo ${image#*/});
+_exec "${bin_dir}/nerdctl -n k8s.io image load -i ${imagetar}"
+_exec "${bin_dir}/nerdctl -n k8s.io tag  ${image} ${reimage}"
+_info "pushing tagged image=[${reimage}]"
+_exec "${bin_dir}/nerdctl -n k8s.io push ${reimage}"
+_exec "${bin_dir}/nerdctl -n k8s.io rmi ${image} ${reimage}"
+
+#End: load-tag-push.sh

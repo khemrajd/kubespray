@@ -1,0 +1,27 @@
+- name: postinstall | setup kubens|kubectx
+  import_playbook: kubectx.yml
+  ignore_errors: true
+
+- name: post k8s cluster jobs
+  hosts: etcd:k8s_cluster:calico_rr
+  become: true
+  gather_facts: false
+  tasks:
+    - name: postinstall | set kube config for non-root user
+      import_tasks: set_kube_config.yml
+      when:
+        - ansible_user != "root"
+        - inventory_hostname in groups['kube_control_plane']
+
+    - name: postinstall | untag <none> image ids
+      shell:
+        cmd: "{{bin_dir}}/nerdctl images  --names | grep sha256 | awk '{print $1}' | xargs {{bin_dir}}/nerdctl rmi"
+      ignore_errors: true
+      no_log: true
+
+    - name: postinstall | Delete offline resuide
+      file:
+        path: "{{download_cache_dir}}/images"
+        state: absent
+
+# End: k8s-post-install/postinstall.yaml

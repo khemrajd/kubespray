@@ -1,0 +1,12 @@
+---
+# tasks file for roles/ski-prereq-checks
+
+- name: Ensure registry_endpoint is provided
+  assert:
+    that: registry_host is defined
+    msg: "'registry_endpoint' is not defined. Installer pulls K8S container images from registry host"
+  run_once: True
+  when: registry_endpoint_pull_enabled | default('false') | bool
+- import_tasks: 002-firewall-status.yml
+- import_tasks: 003-check-cluster-trails.yml
+- import_tasks: 004-check-cluster-name.yml

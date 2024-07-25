@@ -17,12 +17,14 @@ most modern installs of OpenStack that support the basic services.
 - [ELASTX](https://elastx.se/)
 - [EnterCloudSuite](https://www.entercloudsuite.com/)
 - [FugaCloud](https://fuga.cloud/)
-- [Open Telekom Cloud](https://cloud.telekom.de/) : requires to set the variable `wait_for_floatingip = "true"` in your cluster.tfvars
+- [Open Telekom Cloud](https://cloud.telekom.de/)
 - [OVH](https://www.ovh.com/)
 - [Rackspace](https://www.rackspace.com/)
+- [Safespring](https://www.safespring.com)
 - [Ultimum](https://ultimum.io/)
 - [VexxHost](https://vexxhost.com/)
 - [Zetta](https://www.zetta.io/)
+- [Cloudify](https://www.cloudify.ro/en)
 
 ## Approach
 
@@ -87,7 +89,7 @@ binaries available on hyperkube v1.4.3_coreos.0 or higher.
 
 ## Requirements
 
-- [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) 0.12 or later
+- [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) 0.14 or later
 - [Install Ansible](http://docs.ansible.com/ansible/latest/intro_installation.html)
 - you already have a suitable OS image in Glance
 - you already have a floating IP pool created
@@ -96,9 +98,10 @@ binaries available on hyperkube v1.4.3_coreos.0 or higher.
 
 ## Module Architecture
 
-The configuration is divided into three modules:
+The configuration is divided into four modules:
 
 - Network
+- Loadbalancer
 - IPs
 - Compute
 
@@ -247,10 +250,12 @@ For your cluster, edit `inventory/$CLUSTER/cluster.tfvars`.
 |`cluster_name` | All OpenStack resources will use the Terraform variable`cluster_name` (default`example`) in their name to make it easier to track. For example the first compute resource will be named`example-kubernetes-1`. |
 |`az_list` | List of Availability Zones available in your OpenStack cluster. |
 |`network_name` | The name to be given to the internal network that will be generated |
+|`use_existing_network`| Use an existing network with the name of `network_name`. `false` by default |
 |`network_dns_domain` | (Optional) The dns_domain for the internal network that will be generated |
 |`dns_nameservers`| An array of DNS name server names to be used by hosts in the internal subnet. |
 |`floatingip_pool` | Name of the pool from which floating IPs will be allocated |
 |`k8s_master_fips` | A list of floating IPs that you have already pre-allocated; they will be attached to master nodes instead of creating new random floating IPs. |
+|`bastion_fips` | A list of floating IPs that you have already pre-allocated; they will be attached to bastion node instead of creating new random floating IPs. |
 |`external_net` | UUID of the external network that will be routed to |
 |`flavor_k8s_master`,`flavor_k8s_node`,`flavor_etcd`, `flavor_bastion`,`flavor_gfs_node` | Flavor depends on your openstack installation, you can get available flavor IDs through `openstack flavor list` |
 |`image`,`image_gfs` | Name of the image to use in provisioning the compute resources. Should already be loaded into glance. |
@@ -266,26 +271,68 @@ For your cluster, edit `inventory/$CLUSTER/cluster.tfvars`.
 |`supplementary_master_groups` | To add ansible groups to the masters, such as `kube_node` for tainting them as nodes, empty by default. |
 |`supplementary_node_groups` | To add ansible groups to the nodes, such as `kube_ingress` for running ingress controller pods, empty by default. |
 |`bastion_allowed_remote_ips` | List of CIDR allowed to initiate a SSH connection, `["0.0.0.0/0"]` by default |
+|`bastion_allowed_remote_ipv6_ips` | List of IPv6 CIDR allowed to initiate a SSH connection, `["::/0"]` by default |
 |`master_allowed_remote_ips` | List of CIDR blocks allowed to initiate an API connection, `["0.0.0.0/0"]` by default |
+|`master_allowed_remote_ipv6_ips` | List of IPv6 CIDR blocks allowed to initiate an API connection, `["::/0"]` by default |
+|`bastion_allowed_ports` | List of ports to open on bastion node, `[]` by default |
+|`bastion_allowed_ports_ipv6` | List of ports to open on bastion node for IPv6 CIDR blocks, `[]` by default |
 |`k8s_allowed_remote_ips` | List of CIDR allowed to initiate a SSH connection, empty by default |
+|`k8s_allowed_remote_ips_ipv6` | List of IPv6 CIDR allowed to initiate a SSH connection, empty by default |
+|`k8s_allowed_egress_ipv6_ips` | List of IPv6 CIDRs allowed for egress traffic, `["::/0"]` by default |
 |`worker_allowed_ports` | List of ports to open on worker nodes, `[{ "protocol" = "tcp", "port_range_min" = 30000, "port_range_max" = 32767, "remote_ip_prefix" = "0.0.0.0/0"}]` by default |
+|`worker_allowed_ports_ipv6` | List of ports to open on worker nodes for IPv6 CIDR blocks, `[{ "protocol" = "tcp", "port_range_min" = 30000, "port_range_max" = 32767, "remote_ip_prefix" = "::/0"}]` by default |
 |`master_allowed_ports` | List of ports to open on master nodes, expected format is `[{ "protocol" = "tcp", "port_range_min" = 443, "port_range_max" = 443, "remote_ip_prefix" = "0.0.0.0/0"}]`, empty by default |
-|`wait_for_floatingip` | Let Terraform poll the instance until the floating IP has been associated, `false` by default. |
+|`master_allowed_ports_ipv6` | List of ports to open on master nodes for IPv6 CIDR blocks, expected format is `[{ "protocol" = "tcp", "port_range_min" = 443, "port_range_max" = 443, "remote_ip_prefix" = "::/0"}]`, empty by default |
 |`node_root_volume_size_in_gb` | Size of the root volume for nodes, 0 to use ephemeral storage |
 |`master_root_volume_size_in_gb` | Size of the root volume for masters, 0 to use ephemeral storage |
+|`master_volume_type` | Volume type of the root volume for control_plane, 'Default' by default |
+|`node_volume_type` | Volume type of the root volume for nodes, 'Default' by default |
 |`gfs_root_volume_size_in_gb` | Size of the root volume for gluster, 0 to use ephemeral storage |
 |`etcd_root_volume_size_in_gb` | Size of the root volume for etcd nodes, 0 to use ephemeral storage |
 |`bastion_root_volume_size_in_gb` | Size of the root volume for bastions, 0 to use ephemeral storage |
-|`use_server_group` | Create and use openstack nova servergroups, default: false |
+|`master_server_group_policy` | Enable and use openstack nova servergroups for masters with set policy, default: "" (disabled) |
+|`node_server_group_policy` | Enable and use openstack nova servergroups for nodes with set policy, default: "" (disabled) |
+|`etcd_server_group_policy` | Enable and use openstack nova servergroups for etcd with set policy, default: "" (disabled) |
+|`additional_server_groups` | Extra server groups to create. Set "policy" to the policy for the group, expected format is `{"new-server-group" = {"policy" = "anti-affinity"}}`, default: {} (to not create any extra groups) |
 |`use_access_ip` | If 1, nodes with floating IPs will transmit internal cluster traffic via floating IPs; if 0 private IPs will be used instead. Default value is 1. |
+|`port_security_enabled` | Allow to disable port security by setting this to `false`. `true` by default |
+|`force_null_port_security` | Set `null` instead of `true` or `false` for `port_security`. `false` by default |
 |`k8s_nodes` | Map containing worker node definition, see explanation below |
+|`k8s_masters` | Map containing master node definition, see explanation for k8s_nodes and `sample-inventory/cluster.tfvars` |
+| `k8s_master_loadbalancer_enabled`| Enable and use an Octavia load balancer for the K8s master nodes |
+| `k8s_master_loadbalancer_listener_port` | Define via which port the K8s Api should be exposed. `6443` by default  |
+| `k8s_master_loadbalancer_server_port` | Define via which port the K8S api is available on the mas. `6443` by default |
+| `k8s_master_loadbalancer_public_ip` | Specify if an existing floating IP should be used for the load balancer. A new floating IP is assigned by default  |
 
 ##### k8s_nodes
 
-Allows a custom definition of worker nodes giving the operator full control over individual node flavor and
-availability zone placement. To enable the use of this mode set the `number_of_k8s_nodes` and
-`number_of_k8s_nodes_no_floating_ip` variables to 0. Then define your desired worker node configuration
-using the `k8s_nodes` variable.
+Allows a custom definition of worker nodes giving the operator full control over individual node flavor and availability zone placement.
+To enable the use of this mode set the `number_of_k8s_nodes` and `number_of_k8s_nodes_no_floating_ip` variables to 0.
+Then define your desired worker node configuration using the `k8s_nodes` variable.
+The `az`, `flavor` and `floating_ip` parameters are mandatory.
+The optional parameter `extra_groups` (a comma-delimited string) can be used to define extra inventory group memberships for specific nodes.
+
+```yaml
+k8s_nodes:
+   node-name:
+    az: string # Name of the AZ
+    flavor: string # Flavor ID to use
+    floating_ip: bool # If floating IPs should be created or not
+    extra_groups: string # (optional) Additional groups to add for kubespray, defaults to no groups
+    image_id: string # (optional) Image ID to use, defaults to var.image_id or var.image
+    root_volume_size_in_gb: number # (optional) Size of the block storage to use as root disk, defaults to var.node_root_volume_size_in_gb or to use volume from flavor otherwise
+    volume_type: string # (optional) Volume type to use, defaults to var.node_volume_type
+    network_id: string # (optional) Use this network_id for the node, defaults to either var.network_id or ID of var.network_name
+    server_group: string # (optional) Server group to add this node to. If set, this has to be one specified in additional_server_groups, defaults to use the server group specified in node_server_group_policy
+    cloudinit: # (optional) Options for cloud-init
+      extra_partitions: # List of extra partitions (other than the root partition) to setup during creation
+        volume_path: string # Path to the volume to create partition for (e.g. /dev/vda )
+        partition_path: string # Path to the partition (e.g. /dev/vda2 )
+        mount_path: string # Path to where the partition should be mounted
+        partition_start: string # Where the partition should start (e.g. 10GB ). Note, if you set the partition_start to 0 there will be no space left for the root partition
+        partition_end: string # Where the partition should end (e.g. 10GB or -1 for end of volume)
+      netplan_critical_dhcp_interface: string # Name of interface to set the dhcp flag critical = true, to circumvent [this issue](https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1776013).
+```
 
 For example:
 
@@ -305,6 +352,7 @@ k8s_nodes = {
     "az" = "sto3"
     "flavor" = "83d8b44a-26a0-4f02-a981-079446926445"
     "floating_ip" = true
+    "extra_groups" = "calico_rr"
   }
 }
 ```
@@ -406,10 +454,31 @@ plugins. This is accomplished as follows:
 
 ```ShellSession
 cd inventory/$CLUSTER
-terraform init ../../contrib/terraform/openstack
+terraform -chdir="../../contrib/terraform/openstack" init
 ```
 
 This should finish fairly quickly telling you Terraform has successfully initialized and loaded necessary modules.
+
+### Customizing with cloud-init
+
+You can apply cloud-init based customization for the openstack instances before provisioning your cluster.
+One common template is used for all instances. Adjust the file shown below:
+`contrib/terraform/openstack/modules/compute/templates/cloudinit.yaml.tmpl`
+For example, to enable openstack novnc access and ansible_user=root SSH access:
+
+```ShellSession
+#cloud-config
+## in some cases novnc console access is required
+## it requires ssh password to be set
+ssh_pwauth: yes
+chpasswd:
+  list: |
+    root:secret
+  expire: False
+
+## in some cases direct root ssh access via ssh key is required
+disable_root: false
+```
 
 ### Provisioning cluster
 
@@ -417,7 +486,7 @@ You can apply the Terraform configuration to your cluster with the following com
 issued from your cluster's inventory directory (`inventory/$CLUSTER`):
 
 ```ShellSession
-terraform apply -var-file=cluster.tfvars ../../contrib/terraform/openstack
+terraform -chdir="../../contrib/terraform/openstack" apply -var-file=cluster.tfvars
 ```
 
 if you chose to create a bastion host, this script will create
@@ -432,7 +501,7 @@ pick it up automatically.
 You can destroy your new cluster with the following command issued from the cluster's inventory directory:
 
 ```ShellSession
-terraform destroy -var-file=cluster.tfvars ../../contrib/terraform/openstack
+terraform -chdir="../../contrib/terraform/openstack" destroy -var-file=cluster.tfvars
 ```
 
 If you've started the Ansible run, it may also be a good idea to do some manual cleanup:
@@ -550,7 +619,7 @@ Edit `inventory/$CLUSTER/group_vars/k8s_cluster/k8s_cluster.yml`:
 
 - Set variable **kube_network_plugin** to your desired networking plugin.
   - **flannel** works out-of-the-box
-  - **calico** requires [configuring OpenStack Neutron ports](/docs/openstack.md) to allow service and pod subnets
+  - **calico** requires [configuring OpenStack Neutron ports](/docs/cloud_providers/openstack.md) to allow service and pod subnets
 
 ```yml
 # Choose network plugin (calico, weave or flannel)

@@ -1,0 +1,32 @@
+- name: load_images | Find all tar files in {{local_release_dir}}/images  folder
+  find:
+    paths: "{{local_release_dir}}/images"
+    patterns: "*.tar"
+  run_once: true
+  register: tar_files
+
+- name: load_images | Setting k8s_images_list
+  set_fact:
+    k8s_images_list: "{{ tar_files.files | map(attribute='path') | list}}"
+  run_once: true
+
+- name: load_images | Print k8s_images_list
+  debug:
+    var: registry_endpoint, k8s_images_list
+  run_once: true
+ 
+- name: load_images | load, tag and push k8s images
+  shell: "{{bin_dir}}/load-tag-push.sh {{imagetar}} {{registry_endpoint}}"
+  with_items:
+    - "{{k8s_images_list}}"
+  loop_control:
+    loop_var: imagetar
+  when: "'docker.io_library_registry' not in imagetar"
+
+- name: load_images | untag <none> image ids
+  shell:
+    cmd: "{{bin_dir}}/nerdctl images  --names | grep sha256 | awk '{print $1}' | xargs {{bin_dir}}/nerdctl rmi"
+  ignore_errors: true
+  no_log: true
+#End: load_images.yml
+

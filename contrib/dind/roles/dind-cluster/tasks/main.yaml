@@ -1,9 +1,9 @@
 ---
-- name: set_fact distro_setup
+- name: Set_fact distro_setup
   set_fact:
     distro_setup: "{{ distro_settings[node_distro] }}"
 
-- name: set_fact other distro settings
+- name: Set_fact other distro settings
   set_fact:
     distro_user: "{{ distro_setup['user'] }}"
     distro_ssh_service: "{{ distro_setup['ssh_service'] }}"
@@ -35,6 +35,7 @@
       path-exclude=/usr/share/doc/*
       path-include=/usr/share/doc/*/copyright
     dest: /etc/dpkg/dpkg.cfg.d/01_nodoc
+    mode: 0644
   when:
     - ansible_os_family == 'Debian'
 
@@ -42,7 +43,7 @@
   package:
     name: "{{ item }}"
     state: present
-  with_items: "{{ distro_extra_packages }} + [ 'rsyslog', 'openssh-server' ]"
+  with_items: "{{ distro_extra_packages + ['rsyslog', 'openssh-server'] }}"
 
 - name: Start needed services
   service:
@@ -63,9 +64,10 @@
   copy:
     content: "{{ distro_user }} ALL=(ALL) NOPASSWD:ALL"
     dest: "/etc/sudoers.d/{{ distro_user }}"
+    mode: 0640
 
-- name: Add my pubkey to "{{ distro_user }}" user authorized keys
-  authorized_key:
+- name: "Add my pubkey to {{ distro_user }} user authorized keys"
+  ansible.posix.authorized_key:
     user: "{{ distro_user }}"
     state: present
-    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+    key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"

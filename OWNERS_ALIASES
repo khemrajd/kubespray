@@ -1,18 +1,24 @@
 aliases:
   kubespray-approvers:
-    - mattymo
-    - chadswen
-    - mirwan
-    - miouge1
-    - woopstar
-    - luckysb
+    - cristicalin
     - floryut
-  kubespray-reviewers:
-    - holmsten
-    - bozzo
-    - eppo
+    - liupeng0518
+    - mzaian
     - oomichi
+    - yankay
+  kubespray-reviewers:
+    - cyclinder
+    - erikjiang
+    - mrfreezeex
+    - mzaian
+    - vannten
+    - yankay
   kubespray-emeritus_approvers:
-    - riverzhang
-    - atoms
     - ant31
+    - atoms
+    - chadswen
+    - luckysb
+    - mattymo
+    - miouge1
+    - riverzhang
+    - woopstar

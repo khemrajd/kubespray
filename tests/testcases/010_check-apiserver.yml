@@ -1,5 +1,6 @@
 ---
-- hosts: kube_control_plane
+- name: Testcases for apiserver
+  hosts: kube_control_plane
 
   tasks:
   - name: Check the API servers are responding
@@ -8,8 +9,11 @@
       validate_certs: no
       status_code: 200
     register: apiserver_response
+    retries: 12
+    delay: 5
+    until: apiserver_response is success
 
-  - debug:
+  - debug:  # noqa name[missing]
       msg: "{{ apiserver_response.json }}"
 
   - name: Check API servers version

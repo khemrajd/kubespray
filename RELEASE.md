@@ -2,17 +2,20 @@
 
 The Kubespray Project is released on an as-needed basis. The process is as follows:
 
-1. An issue is proposing a new release with a changelog since the last release
-2. At least one of the [approvers](OWNERS_ALIASES) must approve this release
-3. The `kube_version_min_required` variable is set to `n-1`
-4. Remove hashes for [EOL versions](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md) of kubernetes from `*_checksums` variables.
-5. An approver creates [new release in GitHub](https://github.com/kubernetes-sigs/kubespray/releases/new) using a version and tag name like `vX.Y.Z` and attaching the release notes
-6. An approver creates a release branch in the form `release-X.Y`
-7. The corresponding version of [quay.io/kubespray/kubespray:vX.Y.Z](https://quay.io/repository/kubespray/kubespray) and [quay.io/kubespray/vagrant:vX.Y.Z](https://quay.io/repository/kubespray/vagrant) docker images are built and tagged
-8. The `KUBESPRAY_VERSION` variable is updated in `.gitlab-ci.yml`
-9. The release issue is closed
-10. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] Kubespray $VERSION is released`
-11. The topic of the #kubespray channel is updated with `vX.Y.Z is released! | ...`
+1. An issue is proposing a new release with a changelog since the last release. Please see [a good sample issue](https://github.com/kubernetes-sigs/kubespray/issues/8325)
+1. At least one of the [approvers](OWNERS_ALIASES) must approve this release
+1. (Only for major releases) The `kube_version_min_required` variable is set to `n-1`
+1. (Only for major releases) Remove hashes for [EOL versions](https://github.com/kubernetes/website/blob/main/content/en/releases/patch-releases.md) of kubernetes from `*_checksums` variables.
+1. Create the release note with [Kubernetes Release Notes Generator](https://github.com/kubernetes/release/blob/master/cmd/release-notes/README.md). See the following `Release note creation` section for the details.
+1. An approver creates [new release in GitHub](https://github.com/kubernetes-sigs/kubespray/releases/new) using a version and tag name like `vX.Y.Z` and attaching the release notes
+1. (Only for major releases) An approver creates a release branch in the form `release-X.Y`
+1. (For major releases) On the `master` branch: bump the version in `galaxy.yml` to the next expected major release (X.y.0 with y = Y + 1), make a Pull Request.
+1. (For minor releases) On the `release-X.Y` branch: bump the version in `galaxy.yml` to the next expected minor release (X.Y.z with z = Z + 1), make a Pull Request.
+1. The corresponding version of [quay.io/kubespray/kubespray:vX.Y.Z](https://quay.io/repository/kubespray/kubespray) and [quay.io/kubespray/vagrant:vX.Y.Z](https://quay.io/repository/kubespray/vagrant) container images are built and tagged. See the following `Container image creation` section for the details.
+1. (Only for major releases) The `KUBESPRAY_VERSION` in `.gitlab-ci.yml` is upgraded to the version we just released # TODO clarify this, this variable is for testing upgrades.
+1. The release issue is closed
+1. An announcement email is sent to `dev@kubernetes.io` with the subject `[ANNOUNCE] Kubespray $VERSION is released`
+1. The topic of the #kubespray channel is updated with `vX.Y.Z is released! | ...`
 
 ## Major/minor releases and milestones
 
@@ -46,3 +49,37 @@ The Kubespray Project is released on an as-needed basis. The process is as follo
   then Kubespray v2.1.0 may be bound to only minor changes to `kube_version`, like v1.5.1
   and *any* changes to other components, like etcd v4, or calico 1.2.3.
   And Kubespray v3.x.x shall be bound to `kube_version: 2.x.x` respectively.
+
+## Release note creation
+
+You can create a release note with:
+
+```shell
+export GITHUB_TOKEN=<your-github-token>
+export ORG=kubernetes-sigs
+export REPO=kubespray
+release-notes --start-sha <The start commit-id> --end-sha <The end commit-id> --dependencies=false --output=/tmp/kubespray-release-note --required-author=""
+```
+
+If the release note file(/tmp/kubespray-release-note) contains "### Uncategorized" pull requests, those pull requests don't have a valid kind label(`kind/feature`, etc.).
+It is necessary to put a valid label on each pull request and run the above release-notes command again to get a better release note
+
+## Container image creation
+
+The container image `quay.io/kubespray/kubespray:vX.Y.Z` can be created from Dockerfile of the kubespray root directory:
+
+```shell
+cd kubespray/
+nerdctl build -t quay.io/kubespray/kubespray:vX.Y.Z .
+nerdctl push quay.io/kubespray/kubespray:vX.Y.Z
+```
+
+The container image `quay.io/kubespray/vagrant:vX.Y.Z` can be created from build.sh of test-infra/vagrant-docker/:
+
+```shell
+cd kubespray/test-infra/vagrant-docker/
+./build vX.Y.Z
+```
+
+Please note that the above operation requires the permission to push container images into quay.io/kubespray/.
+If you don't have the permission, please ask it on the #kubespray-dev channel.

@@ -1,0 +1,16 @@
+---
+- name: collect facts about system services
+  service_facts:
+  register: services_state
+ 
+- name: Stop if either firewall | nftabes | iptables service is running
+  assert: 
+     that: ansible_facts.services[item].state != "running"
+     fail_msg: "{{ansible_facts.services[item].name}} is {{ansible_facts.services[item].state}}, please stop {{ansible_facts.services[item].name}} and retry"
+     success_msg: "{{ansible_facts.services[item].name}} is inactive/stopped, good to go"
+  with_items:
+         - 'firewalld.service'
+         - 'nftables.service'
+         - 'iptables.service'
+         - 'ip6tables.service'
+

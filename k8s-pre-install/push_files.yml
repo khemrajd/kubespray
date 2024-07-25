@@ -1,0 +1,33 @@
+---
+- name: create "{{extra_dirs}}"
+  file:
+    path: "{{item}}"
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: 0777
+    state: directory
+    recurse: yes
+  with_items:
+    - "{{extra_dirs}}"
+
+- name: Check "{{tmp_dir}}" freespace
+  shell: df "{{tmp_dir}}" --output\=avail | tail -1
+  register: freespace
+
+- name: Stop if enough space is not available
+  fail:
+    msg: "{{tmp_dir}} does not have the minimum space required to continue (1.5Gb requested)."
+  when: freespace.stdout|float is lt 1500000
+
+- name:  push offline files to cluster nodes
+  synchronize:
+    src: "{{playbook_dir}}/{{offline_dir}}/"
+    dest: "{{tmp_dir}}/{{offline_dir}}"
+    use_ssh_args: true
+    mode: push
+  register: copy_files
+  until: copy_files is succeeded
+  delay: 3
+  retries: 3
+
+#End: push_files.yml
