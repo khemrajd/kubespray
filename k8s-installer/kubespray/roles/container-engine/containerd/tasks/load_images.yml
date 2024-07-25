@@ -1,0 +1,23 @@
+- name: Find all tar files in {{local_release_dir}}/images  folder
+  find:
+    paths: "{{local_release_dir}}/images"
+    patterns: "*.tar"
+  run_once: true
+  register: tar_files
+
+- name: Setting k8s_images_list
+  set_fact:
+    k8s_images_list: "{{ tar_files.files | map(attribute='path') | list}}"
+  run_once: true
+
+- name: Print k8s_images_list
+  debug:
+    var: k8s_images_list
+  run_once: true
+ 
+- name: load k8s docker images
+  shell:  
+    cmd: "{{bin_dir}}/nerdctl -n k8s.io image load < {{item}}"
+  with_items:
+    - "{{k8s_images_list}}"
+ 
