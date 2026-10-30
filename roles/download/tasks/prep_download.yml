@@ -71,7 +71,7 @@
     state: directory
     mode: "0755"
   when:
-    - ansible_os_family != "Flatcar"
+    - ansible_facts['os_family'] != "Flatcar"
 
 - name: Prep_download | Create local cache for files and images on control node
   file:
